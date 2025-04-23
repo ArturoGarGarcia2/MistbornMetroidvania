@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce7924d304bc00643a717f52f885dc32, type: 3}
+  m_Name: Pruebus
+  m_EditorClassIdentifier: 
+  npcName: Pruebus
+  estados:
+  - estado: inicio
+    frases:
+    - Estos son frases de prueba
+    - Para ver si funciona bien
+  - estado: despues
+    frases:
+    - Y esto sigue siendo prueba
+    - Si ves esto, colega, has triunfado
