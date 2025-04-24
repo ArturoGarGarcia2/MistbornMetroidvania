@@ -331,7 +331,7 @@ public class PauseManager : MonoBehaviour{
         isDatos();
         SetFraseHemalurgia();
         UpdateSelection();
-        // UpdateObjetos();
+        UpdateObjetos();
     }
 
     private void SetFraseHemalurgia(){
@@ -474,6 +474,7 @@ public class PauseManager : MonoBehaviour{
     }
 
     private void ChangeSelectedObjeto(int deltaX, int deltaY){
+        if(!isPaused) return;
         if (!canChangeObjeto) {
             Debug.LogWarning("Cambio de metal bloqueado temporalmente.");
             return;
@@ -483,19 +484,14 @@ public class PauseManager : MonoBehaviour{
         int maxY = objetos.Length;
         int maxX = objetos[selectedIndexObjetosY].columnas.Length;
 
-        // Calcular nuevo índice Y (fila)
         selectedIndexObjetosY = Mathf.Clamp(selectedIndexObjetosY + deltaY, 0, maxY - 1);
 
-        // Actualizar maxX si cambia la fila (por si las filas no tienen el mismo número de columnas)
         maxX = objetos[selectedIndexObjetosY].columnas.Length;
 
-        // Calcular nuevo índice X (columna)
         selectedIndexObjetosX = Mathf.Clamp(selectedIndexObjetosX + deltaX, 0, maxX - 1);
 
-        // Aquí puedes acceder a la imagen seleccionada
         Image imagenSeleccionada = objetos[selectedIndexObjetosY].columnas[selectedIndexObjetosX];
         
-        // Por ejemplo: resaltar o hacer algo visual
         foreach(FilaImagenes f in objetos){
             foreach(Image i in f.columnas){
                 i.sprite = notSelectedFrame;
@@ -510,35 +506,35 @@ public class PauseManager : MonoBehaviour{
     }
 
     private IEnumerator ResetChangeObjetoCooldown(){
-        yield return new WaitForSecondsRealtime(0.2f);
+        yield return new WaitForSecondsRealtime(0.1f);
         canChangeObjeto = true;
     }
 
-    // private void UpdateObjetos(){
-    //     List<int> objetosDes = playerScript.objetosDesbloqueados;
-    //     int spriteIndex = 0;
+    private void UpdateObjetos(){
+        List<Objeto> objetosDes = playerScript.objetosDesbloqueados;
+        int spriteIndex = 0;
 
-    //     for (int fila = 0; fila < objetos.Length; fila++){
-    //         for (int col = 0; col < objetos[0].columnas.Length; col++){
-    //             Image img = objetos[fila].columnas[col].transform.GetChild(0).GetComponent<Image>();
+        for (int fila = 0; fila < objetos.Length; fila++){
+            for (int col = 0; col < objetos[0].columnas.Length; col++){
+                Image img = objetos[fila].columnas[col].transform.GetChild(0).GetComponent<Image>();
 
-    //             if (spriteIndex < objetosDes.Count){
-    //                 int id = objetosDes[spriteIndex];
-    //                 if (id >= 0 && id < objetosSprite.Length){
-    //                     img.sprite = objetosSprite[id-1];
-    //                     img.color = new Color(1, 1, 1, 1); // opacidad total
-    //                 }else{
-    //                     img.sprite = null;
-    //                     img.color = new Color(1, 1, 1, 0); // invisible
-    //                 }
-    //                 spriteIndex++;
-    //             }else{
-    //                 img.sprite = null;
-    //                 img.color = new Color(1, 1, 1, 0); // invisible
-    //             }
-    //         }
-    //     }
-    // }
+                if (spriteIndex < objetosDes.Count){
+                    Objeto obj = objetosDes[spriteIndex];
+                    if (obj.id >= 0 && obj.id < objetosSprite.Length){
+                        img.sprite = objetosSprite[obj.id-1];
+                        img.color = new Color(1, 1, 1, 1);
+                    }else{
+                        img.sprite = null;
+                        img.color = new Color(1, 1, 1, 0);
+                    }
+                    spriteIndex++;
+                }else{
+                    img.sprite = null;
+                    img.color = new Color(1, 1, 1, 0);
+                }
+            }
+        }
+    }
 
     public void OnSelect(InputAction.CallbackContext context){
         if (context.performed && isPaused){
