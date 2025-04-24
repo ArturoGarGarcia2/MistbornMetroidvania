@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class Objeto{
-    int id;
-    string nombre;
-    string descripcion;
+    public int id;
+    public string nombre;
+    public string descripcion;
 
     public Objeto(int i, string n, string d) {
         id = i;

@@ -136,7 +136,9 @@ public class PlayerScript : MonoBehaviour
         foreach(int i in idObjetosDesbloqueados){
             Dictionary<string,object> objetoRaw = DatabaseManager.Instance.GetSingleRowFromQuery($"SELECT * FROM objeto WHERE id = {i}");
 
-            Debug.Log($"result: {objetoRaw["nombre"]} - {objetoRaw["descripcion"]}");
+            objetosDesbloqueados.Add(new Objeto(Convert.ToInt32(objetoRaw["id"]), objetoRaw["nombre"].ToString(), objetoRaw["descripcion"].ToString()));
+
+            Debug.Log($"result: {objetoRaw["nombre"]} - {objetoRaw["descripcion"]} - {objetoRaw["id"]}");
         }
 
         cvMetalWheel.SetActive(false);
