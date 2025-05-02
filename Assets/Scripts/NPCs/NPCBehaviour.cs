@@ -35,6 +35,9 @@ public class NPCBehaviour : MonoBehaviour {
 
     public void StartDialogue(){
         Debug.Log("Iniciando diálogo del NPC");
-        DialogManager.instance.StartDialog(npcData.estados[0].frases); // o como lo tengas implementado
+        DialogManager.instance.StartDialog(npcData.estados[0].frases);
+        if(npcData.eventName != null){
+            GameEvents.NPCSpoken(npcData.eventName);
+        }
     }
 }

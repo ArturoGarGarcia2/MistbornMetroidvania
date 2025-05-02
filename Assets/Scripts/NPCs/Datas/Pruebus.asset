@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Pruebus
   m_EditorClassIdentifier: 
   npcName: Pruebus
+  eventName: 
   estados:
   - estado: inicio
     frases:

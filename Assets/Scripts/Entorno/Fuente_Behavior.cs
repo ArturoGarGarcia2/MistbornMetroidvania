@@ -35,11 +35,11 @@ public class FuenteBehavior : MonoBehaviour
 
         // Verificar si ya existe un registro en la tabla punto_control para ese ID
         int count = (int)(long)DatabaseManager.Instance.ExecuteScalar(
-            "SELECT COUNT(*) FROM punto_control WHERE id = @param0;", id);
+            "SELECT COUNT(*) FROM checkpoint WHERE id = @param0;", id);
 
         if (count == 0) {
             // Si no existe, insertar el nuevo punto de control con el id y las posiciones
-            string insertQuery = "INSERT INTO punto_control (id, posicion_x, posicion_y) " +
+            string insertQuery = "INSERT INTO checkpoint (id, x_pos, y_pos) " +
                                 "VALUES (@param0, @param1, @param2);";
             DatabaseManager.Instance.ExecuteNonQuery(insertQuery, id, posicionX, posicionY-1.5);
             // Debug.Log("Punto de control insertado: ID = " + id + ", Posición = (" + posicionX + ", " + posicionY + ")");
@@ -49,7 +49,7 @@ public class FuenteBehavior : MonoBehaviour
 
         // Comprobar si la fuente está activa
         int activo = (int)(long)DatabaseManager.Instance.ExecuteScalar(
-            "SELECT COUNT(*) FROM punto_control_visitado WHERE archivo_id = 1 AND punto_control_id = @param0;", id);
+            "SELECT COUNT(*) FROM visited_checkpoint WHERE file_id = 1 AND checkpoint_id = @param0;", id);
 
         // Debug.Log("ACTIVA LA FUENTE: " + activo);
         if (activo > 0) {

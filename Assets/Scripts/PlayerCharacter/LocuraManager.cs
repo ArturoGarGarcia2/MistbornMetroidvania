@@ -1,140 +1,102 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LocuraManager : MonoBehaviour{
-    public enum FaseLocura{
-        Ninguna,
-        MurmullosDeLasParedes,
-        OjosEnLaOscuridad,
-        ElMundoSeRompe,
-        DominioDeRuin,
-        ExtasisHemalurgico,
-        DecliveMetalico
+    
+    PlayerScript ps;
+
+    // public Dictionary<string,float[]> fases = new Dictionary<string,float[]>{
+    //     {"silencio", new float[] {90, 90, 90, 90, 90, 90,}},
+    //     {"murmullos", new float[] {5400, 5400, 3240, 2700, 1080, 540}},
+    //     {"ojos", new float[] {4500, 4500, 2700, 2250, 900, 450}},
+    //     {"mundo", new float[] {3600, 3600, 2160, 1800, 720, 360}},
+    //     {"dominio", new float[] {2700, 2700, 1620, 1350, 540, 270}},
+    //     {"extasis", new float[] {90, 90, 90, 90, 90, 90,}},
+    //     {"declive", new float[] {300, 300, 300, 300, 300, 300,}},
+    // };
+
+    public float time = 0f;
+
+    int silencio = 90;
+    int murmullos = 90+5400;
+    int ojos = 90+5400+4500;
+    int mundo = 90+5400+4500+3600;
+    int dominio = 90+5400+4500+3600+2700;
+    int extasis = 90+5400+4500+3600+2700+180;
+    int declive = 90+5400+4500+3600+2700+180+300;
+    public int maxTime = 0;
+
+    
+    void Start(){
+        maxTime = declive;
+        ps = FindObjectOfType<PlayerScript>();
+        if (ps == null) {
+            Debug.LogError("No se encontró el ps en la escena.");
+            return;
+        }
+        time = DatabaseManager.Instance.GetInt("SELECT phase_time FROM file WHERE id = 1;");
     }
 
-    public FaseLocura faseActual = FaseLocura.Ninguna;
+    void Update(){
+        float mult = 0f;
+        if(time < silencio || time > dominio){
+            mult = GetMultiplicadorByNumClavos(ps.GetNumClavos()) == -1f ? -1f : 1f;
+        }else{
+            mult = GetMultiplicadorByNumClavos(ps.GetNumClavos());
+        }
+        time += Time.deltaTime * mult;
 
-    private float tiempoEnFaseActual = 0f;
-    private float tiempoParaSiguienteFase = 0f;
+        if(time > 0 && time < silencio){
+            ps.faseActual = "silencio";
+        }else if(time > silencio && time < murmullos){
+            ps.faseActual = "murmullos";
+        }else if(time > murmullos && time < ojos){
+            ps.faseActual = "ojos";
+        }else if(time > ojos && time < mundo){
+            ps.faseActual = "mundo";
+        }else if(time > mundo && time < dominio){
+            ps.faseActual = "dominio";
+        }else if(time > dominio && time < extasis){
+            ps.faseActual = "extasis";
+        }else if(time > extasis && time < declive){
+            ps.faseActual = "declive";
+        }
 
-    private int clavosEquipados = 0;
-    private bool enModoRetroceso = false;
-    private bool guardandoEnMentealuminio = false;
-    private bool decantandoMentealuminio = false;
-
-    private Dictionary<FaseLocura, float[]> duracionesPorFase = new Dictionary<FaseLocura, float[]>{
-        // Duraciones en segundos para 1 a 7 clavos (por fase)
-        { FaseLocura.MurmullosDeLasParedes, new float[] {3600f, 3000f, 2400f, 1800f, 1200f, 900f, 600f} },
-        { FaseLocura.OjosEnLaOscuridad,     new float[] {3600f, 3000f, 2400f, 1800f, 1200f, 900f, 600f} },
-        { FaseLocura.ElMundoSeRompe,        new float[] {2400f, 1800f, 1500f, 1200f, 800f, 600f, 400f} },
-        { FaseLocura.DominioDeRuin,         new float[] {1800f, 1500f, 1200f, 900f, 600f, 450f, 300f} },
-        { FaseLocura.ExtasisHemalurgico,    new float[] {1800f, 1500f, 1200f, 900f, 600f, 450f, 300f} },
-        { FaseLocura.DecliveMetalico,        new float[] {600f, 600f, 600f, 600f, 600f, 600f, 600f} },
-    };
-
-    private Coroutine progresoCoroutine;
-
-    private void Start(){
-        // No empieza la locura hasta después de 90s de colocar un clavo
-    }
-
-    public void AplicarClavo(){
-        clavosEquipados++;
-        if (clavosEquipados == 1)
-            StartCoroutine(EsperarInicioLocura());
-    }
-
-    public void QuitarClavo(){
-        clavosEquipados = Mathf.Max(0, clavosEquipados - 1);
-        if (clavosEquipados == 0)
-            IniciarRetroceso();
-    }
-
-    IEnumerator EsperarInicioLocura(){
-        yield return new WaitForSeconds(90f); // 1.5 minutos
-        if (clavosEquipados > 0 && progresoCoroutine == null)
-            progresoCoroutine = StartCoroutine(ActualizarLocura());
-    }
-
-    IEnumerator ActualizarLocura(){
-        while (true){
-            float duracionFase = ObtenerDuracionFase(faseActual, clavosEquipados);
-            tiempoParaSiguienteFase = duracionFase;
-            tiempoEnFaseActual = 0f;
-
-            while (tiempoEnFaseActual < tiempoParaSiguienteFase){
-                float delta = Time.deltaTime;
-
-                // Aceleración o reversión
-                if (guardandoEnMentealuminio)
-                    delta *= 1.33f; // 1 / 0.75
-                else if (decantandoMentealuminio)
-                    delta *= 5f; // 1 / 0.20
-
-                tiempoEnFaseActual += enModoRetroceso ? -delta : delta;
-
-                if (!enModoRetroceso && tiempoEnFaseActual >= tiempoParaSiguienteFase){
-                    AvanzarFase();
-                    break;
-                }
-                else if (enModoRetroceso && tiempoEnFaseActual <= 0f){
-                    RetrocederFase();
-                    break;
-                }
-
-                yield return null;
-            }
+        if(time <= 0){
+            time = 0;
+        }
+        if(time >= declive){
+            time = ojos;
         }
     }
 
-    float ObtenerDuracionFase(FaseLocura fase, int clavos){
-        int index = Mathf.Clamp(clavos - 1, 0, 6); // 0 a 6 para 1-7 clavos
-        float baseDuracion = duracionesPorFase.ContainsKey(fase) ? duracionesPorFase[fase][index] : 9999f;
+    
+    float GetMultiplicadorByNumClavos(int numClavos){
+        return numClavos == 0 ? -1f :
+                numClavos == 1 ? 1f :
+                numClavos == 2|| numClavos == 3 ? 5f/3f :
+                numClavos == 4 ? 2f :
+                numClavos == 5|| numClavos == 6 ? 5f :
+                10f;
+    }
+}
 
-        return baseDuracion;
+[System.Serializable]
+public struct FaseLocura {
+    public string nombre;
+    public float[] duraciones;
+
+    public FaseLocura(string nombre, float[] duraciones){
+        this.nombre = nombre;
+        this.duraciones = duraciones;
     }
 
-    void AvanzarFase(){
-        if (faseActual < FaseLocura.DecliveMetalico)
-            faseActual++;
-        else
-            faseActual = FaseLocura.ElMundoSeRompe; // Reinicio suave
+    public float[] GetDuraciones(){
+        return duraciones;
     }
 
-    void RetrocederFase(){
-        if (faseActual > FaseLocura.Ninguna)
-            faseActual--;
-        else
-            DetenerLocura();
-    }
-
-    void DetenerLocura(){
-        if (progresoCoroutine != null){
-            StopCoroutine(progresoCoroutine);
-            progresoCoroutine = null;
-        }
-
-        faseActual = FaseLocura.Ninguna;
-        tiempoEnFaseActual = 0f;
-        enModoRetroceso = false;
-    }
-
-    void IniciarRetroceso(){
-        enModoRetroceso = true;
-    }
-
-    // Feruquimia externa
-    public void SetGuardandoMenteAluminio(bool guardando){
-        guardandoEnMentealuminio = guardando;
-        if (guardando)
-            decantandoMentealuminio = false;
-    }
-
-    public void SetDecantandoMenteAluminio(bool decantando){
-        decantandoMentealuminio = decantando;
-        if (decantando)
-            guardandoEnMentealuminio = false;
+    public float GetDuracion(int fase){
+        return duraciones[fase];
     }
 }

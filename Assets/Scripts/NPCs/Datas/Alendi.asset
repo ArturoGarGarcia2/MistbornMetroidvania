@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce7924d304bc00643a717f52f885dc32, type: 3}
-  m_Name: Nacido
+  m_Name: Alendi
   m_EditorClassIdentifier: 
-  npcName: Nacido
+  npcName: Alendi
+  eventName: Hablado_Alendi
   estados:
   - estado: inicio
     frases:

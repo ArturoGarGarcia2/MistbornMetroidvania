@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 7a61df57375117b41ac5e21a96e807e5
+guid: 8596ec67b5b696c40aaefed46a7cde91
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ViolentoRunning_0
+      name: Relleno_Alo_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 64
-        height: 64
+        width: 256
+        height: 256
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -111,83 +111,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 299eca73bbfa8ca43bfc8ea14f207d97
-      internalID: -773511646
+      spriteID: 59ed95713de7d2f4689e7256a319d365
+      internalID: 1136558486
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ViolentoRunning_1
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b2655a67c80f2914f94ca1371dd51cb8
-      internalID: 1102951721
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ViolentoRunning_2
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6ce8d9f72e918b5428f4cd16e298a2e2
-      internalID: 1198416968
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ViolentoRunning_3
-      rect:
-        serializedVersion: 2
-        x: 192
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e676b165dbede984ba3e62124eb26db9
-      internalID: 1749445584
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ViolentoRunning_4
+      name: Relleno_Alo_1
       rect:
         serializedVersion: 2
         x: 256
         y: 0
-        width: 64
-        height: 64
+        width: 256
+        height: 256
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -195,20 +132,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 04c61b5301cfb9146a60aecda30289fb
-      internalID: 1119992580
+      spriteID: fc7864c2a8d92bd4fb3d4aaac65b0429
+      internalID: -163711442
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ViolentoRunning_5
+      name: Relleno_Alo_2
       rect:
         serializedVersion: 2
-        x: 320
+        x: 512
         y: 0
-        width: 64
-        height: 64
+        width: 256
+        height: 256
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -216,50 +153,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2c711d95e19549140885ac7676b8bee1
-      internalID: 991479683
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ViolentoRunning_6
-      rect:
-        serializedVersion: 2
-        x: 384
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0c769b2a165c56344ba71b5d4761bb73
-      internalID: 1716831409
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ViolentoRunning_7
-      rect:
-        serializedVersion: 2
-        x: 448
-        y: 0
-        width: 64
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 29930f664a126b045a475284c3cb9f08
-      internalID: -1135955957
+      spriteID: 91a0e813df38308408b685f8f2c7da88
+      internalID: 1804427863
       vertices: []
       indices: 
       edges: []
@@ -275,14 +170,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      ViolentoRunning_0: -773511646
-      ViolentoRunning_1: 1102951721
-      ViolentoRunning_2: 1198416968
-      ViolentoRunning_3: 1749445584
-      ViolentoRunning_4: 1119992580
-      ViolentoRunning_5: 991479683
-      ViolentoRunning_6: 1716831409
-      ViolentoRunning_7: -1135955957
+      Relleno_Alo_0: 1136558486
+      Relleno_Alo_1: -163711442
+      Relleno_Alo_2: 1804427863
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -12,7 +12,7 @@ public class DialogManager : MonoBehaviour {
 
     private Queue<string> frases;
     private bool isActive = false;
-    public float cooldownEntreFrases = 1.0f;
+    public float cooldownEntreFrases = .5f;
     public float cooldownEntreDialogos = 3.0f;
     private bool puedeMostrarFrase = true;
     private bool puedeHablar = true;

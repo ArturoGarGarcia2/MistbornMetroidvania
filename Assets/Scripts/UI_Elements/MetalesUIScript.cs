@@ -5,25 +5,6 @@ using UnityEngine.UI;
 
 public class MetalesUIScript : MonoBehaviour
 {
-    string[] metales = {
-        "Hierro",
-        "Acero",
-        "Estaño",
-        "Peltre",
-        "Zinc",
-        "Latón",
-        "Cobre",
-        "Bronce",
-        "Cadmio",
-        "Bendaleo",
-        "Oro",
-        "Electro",
-        "Cromo",
-        "Nicrosil",
-        "Aluminio",
-        "Duraluminio",
-        "Atium",
-    };
     Dictionary<string, string> metalesChiqui = new Dictionary<string, string>(){
         {"Hierro","Fe"},
         {"Acero","Fe+"},
@@ -41,18 +22,39 @@ public class MetalesUIScript : MonoBehaviour
         {"Nicrosil","Cr+"},
         {"Aluminio","Al"},
         {"Duraluminio","Al+"},
-        {"Atium","Atium"},
+        {"Atium","At"},
     };
-
-    int hierro, acero, estaño, peltre, zinc, laton, cobre, bronce, cadmio, bendaleo, oro, electro, cromo, nicrosil, aluminio, duraluminio, atium;
 
     public Text MetalesText;
     public Text DBText;
 
     PlayerScript playerScript;
-    public Dictionary<string,int> cantidadesFeru = new Dictionary<string, int>();
+    public Dictionary<string,int> capacidadesAlo = new Dictionary<string, int>();
+    public Dictionary<string,int> cantidadesAlo = new Dictionary<string, int>();
     public Dictionary<string,int> capacidadesFeru = new Dictionary<string, int>();
-    public Dictionary<int,int> estadoSlotFeru = new Dictionary<int, int>();
+    public Dictionary<string,int> cantidadesFeru = new Dictionary<string, int>();
+
+    Dictionary<string, string> coloresMetales = new Dictionary<string, string>(){
+        {"Hierro", "#4B4B4B"},
+        {"Acero", "#A9A9A9"},
+        {"Estaño", "#708090"},
+        {"Peltre", "#B0C4DE"},
+        {"Zinc", "#808000"},
+        {"Latón", "#DAA520"},
+        {"Cobre", "#B87333"},
+        {"Bronce", "#CD7F32"},
+        {"Cadmio", "#6A5ACD"},
+        {"Bendaleo", "#9370DB"},
+        {"Oro", "#FFD700"},
+        {"Electro", "#FFB700"},
+        {"Cromo", "#C0C0C0"},
+        {"Nicrosil", "#D3D3D3"},
+        {"Aluminio", "#ADD8E6"},
+        {"Duraluminio", "#4682B4"},
+        {"Atium", "#5EF2DC"},
+    };
+    
+    LocuraManager locuraManager;
 
     // Start is called before the first frame update
     void Start(){
@@ -61,54 +63,35 @@ public class MetalesUIScript : MonoBehaviour
             Debug.LogError("No se encontró el PlayerScript en la escena.");
             return;
         }
+        locuraManager = FindObjectOfType<LocuraManager>();
+        if (locuraManager == null) {
+            Debug.LogError("No se encontró el LocuraManager en la escena.");
+            return;
+        }
     }
 
     void Update(){
-        cantidadesFeru = playerScript.cantidadesFeru;
+        capacidadesAlo = playerScript.capacidadesAlo;
+        cantidadesAlo = playerScript.cantidadesAlo;
         capacidadesFeru = playerScript.capacidadesFeru;
-        estadoSlotFeru = playerScript.estadoSlotFeru;
-        ActualizarMetales();
-    }
-
-    // Coroutine para esperar que la base de datos esté lista
-    IEnumerator EsperarBaseDeDatos(){
-        // Espera hasta que la base de datos esté inicializada
-        while (!DatabaseManager.Instance.IsDatabaseInitialized()){
-            yield return null;
-        }
-
-        // Cuando la base de datos esté lista, actualizar los metales
-        DBText.text = "Base de datos cargada.";
+        cantidadesFeru = playerScript.cantidadesFeru;
         ActualizarMetales();
     }
 
     void ActualizarMetales(){
         string result = "";
-        int acu = 0;
+        result += "<b>Met:  Alo  Feru</b>\n";
+
         foreach(var metal in cantidadesFeru.Keys){
-            result += $"{metalesChiqui[metal]}:  {cantidadesFeru[metal]}";
-            if (acu % 2 == 1) {
-                result += "\n";
-            } else {
-                result += " - ";
-            }
-            acu++;
+            string nombre = metalesChiqui[metal].PadRight(4);
+            string alo = cantidadesAlo[metal].ToString().PadLeft(4);
+            string feru = cantidadesFeru[metal].ToString().PadLeft(4);
+
+            string color = coloresMetales[metal];
+            result += $"<color={color}>{nombre}</color>: {alo} - {feru}\n";
         }
 
         MetalesText.text = result;
-            // "Fe: " + hierro.ToString() + "\n" +
-            // "Fe+: " + acero.ToString() + "\n" +
-            // "Sn: " + estaño.ToString() + "\n" +
-            // "Sn+: " + peltre.ToString() + "\n" +
-            // "Cu: " + cobre.ToString() + "\n" +
-            // "Cu+: " + bronce.ToString() + "\n" +
-            // "Zn: " + zinc.ToString() + "\n" +
-            // "Zn+: " + laton.ToString();
-    }
-
-    float ObtenerMetal(string nombreMetal){
-        string query = "SELECT cantidad FROM metal_archivo WHERE metal_id = (SELECT id FROM metales WHERE nombre = @param0)";
-        object resultado = DatabaseManager.Instance.ExecuteScalar(query, nombreMetal);
-        return resultado != null ? System.Convert.ToSingle(resultado) : 0;
+        MetalesText.text = $"{(int)locuraManager.time}/{locuraManager.maxTime} \n{playerScript.faseActual}";
     }
 }
