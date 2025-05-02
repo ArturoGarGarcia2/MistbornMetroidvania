@@ -7,9 +7,9 @@ using System.Data;
 using Mono.Data.Sqlite;
 using System.IO;
 using UnityEngine.UI;
+using TMPro;
 
-public class PlayerScript : MonoBehaviour
-{
+public class PlayerScript : MonoBehaviour{
     int coins;
 
     [Header("Movimiento")]
@@ -47,7 +47,6 @@ public class PlayerScript : MonoBehaviour
     [Header("Vida")]
     [SerializeField] int lifes = 50;
     public int actual_lifes = 1;
-    Enemy_Hurt EH;
     float targetTime;
     bool dead = false;
     [SerializeField] [Range(5,25)] float hurt_thrust;
@@ -103,18 +102,77 @@ public class PlayerScript : MonoBehaviour
         "Duraluminio",
         "Atium",
     };
+    private string[] descripcionMetalAlo = new string[] {
+        // Hierro
+        "Atrae objetos de metal al brumoso.\nSi el objeto es más pesado, el brumoso será atraído al metal.",
 
+        // Acero
+        "Repele objetos de metal al brumoso.\nSi el objeto es más pesado, el brumoso será repelido del metal.",
+
+        // Estaño
+        "Aumenta la percepción del brumoso.\nLa vista, oído y olfato se verán agudizados mientras se queme el metal.",
+
+        // Peltre
+        "Aumenta la fortaleza física del brumoso.\nLa fuerza, agilidad y resistencia se verán aumentados mientras se queme el metal.",
+
+        // Zinc
+        "Enardece las emociones del objetivo.\nTal es el efecto sobre las empciones que puede volver hostil al objetivo contra sus aliados.",
+
+        // Latón
+        "Apacigua las emociones del objetivo.\nDependiendo del objetivo, puede provocarle menos daño al brumoso o ignorarlo por completo.",
+
+        // Cobre
+        "Oculta la alomancia del brumoso.\nEsto permite ocultar al brumoso de los enemigos que puedan detectar la alomancia.",
+
+        // Bronce
+        "Muestra la alomancia de los brumosos cercanos.\nPermite detectar y conocer la alomancia de los brumosos cercanos.",
+
+        // Cadmio
+        "Crea una burbuja alrededor del brumoso que ralentiza el tiempo en su interior.\nLa percepción es que el tiempo fuera de la burbuja se acelera.",
+
+        // Bendaleo
+        "Crea una burbuja alrededor del brumoso que acelera el tiempo en su interior.\nLa percepción es que el tiempo fuera de la burbuja se ralentiza.",
+
+        // Oro
+        "Crea una proyección de quién podría haber sido el brumoso.\nTocar la \"sombra de oro\" causa efectos secundarios desagradables.",
+
+        // Electro
+        "Crea proyecciones de los posibles futuros cercanos del brumoso.\nAl conocer todas las posibilidades que puede tomar, contrarresta los efectos del atium.",
+
+        // Cromo
+        "Hace perder al objetivo las reservas alománticas.\nPara que haga efecto, tiene que quemarse el metal y tocar al objetivo.",
+
+        // Nicrosil
+        "Hace perder al objetivo las reservas alománticas de los metales que esté quemando en un estallido de poder.\nPara que haga efecto, tiene que quemarse el metal y tocar al objetivo.",
+
+        // Aluminio
+        "Hace perder al brumoso sus propias reservas alománticas.\nAl quemarlo, todas las reservas se perderán rápidamente.",
+
+        // Duraluminio
+        "Hace perder al brumoso sus propias reservas alománticas de los metales que esté quemando en un estallido de poder.\nEste metal puede ser muy poderoso, pero peligroso dependiendo del metal que se queme.",
+
+        // Atium
+        "Permite al usuario ver unos segundos en el futuro, pudiendo prever qué pasará.\nUn metal muy poderoso, pero se consume con mucha facilidad."
+    };
+    public TextMeshProUGUI txtMetalRueda;
     float curacionOroTiempo = 20;
     float curacionOroTiempoTranscurrido = 20;
 
+    public Dictionary<int, int> slotMetalAlo = new Dictionary<int, int>();
+    public Dictionary<string,int> cantidadesAlo = new Dictionary<string, int>();
+    public Dictionary<string,int> capacidadesAlo = new Dictionary<string, int>();
+    public Dictionary<int, int> estadoSlotAlo = new Dictionary<int, int>();
+    public Dictionary<string, int> velocidadQuemado = new Dictionary<string, int>();
+    public Sprite[] spritesBarrasMetales;
+    public GameObject barraRueda;
+
+    public Dictionary<int,int> slotMetalFeru = new Dictionary<int, int>();
     public Dictionary<string,int> cantidadesFeru = new Dictionary<string, int>();
     public Dictionary<string,int> capacidadesFeru = new Dictionary<string, int>();
     public Dictionary<int,int> estadoSlotFeru = new Dictionary<int, int>();
     public Dictionary<string, int> velocidadGuardado = new Dictionary<string, int>();
     public Dictionary<string, int> velocidadDecantado = new Dictionary<string, int>();
 
-    public Dictionary<int, int> slotMetalAlo = new Dictionary<int, int>();
-    public Dictionary<int,int> slotMetalFeru = new Dictionary<int, int>();
     public Dictionary<int, int> slotMetalHema = new Dictionary<int, int>();
     public Dictionary<int, int> vialesVida = new Dictionary<int, int>();
     
@@ -127,19 +185,14 @@ public class PlayerScript : MonoBehaviour
     public bool inNPC = false;
     public bool nextFrase = false;
 
+    public string faseActual;
+    public PlayerData pd;
+
 
     void Start(){
-        SetMetales();
-        SetDictionaries();
-
-        List<int> idObjetosDesbloqueados = DatabaseManager.Instance.GetIntListFromQuery("SELECT objeto_id FROM objeto_desbloqueado WHERE archivo_id = 1;");
-        foreach(int i in idObjetosDesbloqueados){
-            Dictionary<string,object> objetoRaw = DatabaseManager.Instance.GetSingleRowFromQuery($"SELECT * FROM objeto WHERE id = {i}");
-
-            objetosDesbloqueados.Add(new Objeto(Convert.ToInt32(objetoRaw["id"]), objetoRaw["nombre"].ToString(), objetoRaw["descripcion"].ToString()));
-
-            Debug.Log($"result: {objetoRaw["nombre"]} - {objetoRaw["descripcion"]} - {objetoRaw["id"]}");
-        }
+        pd = new PlayerData(1);
+        // SetMetales();
+        // SetDictionaries();
 
         cvMetalWheel.SetActive(false);
         PlayerPrefs.SetInt("Coins", 0);
@@ -147,47 +200,59 @@ public class PlayerScript : MonoBehaviour
         playerAnimator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
         
-        lifes = DatabaseManager.Instance.GetInt("SELECT salud_maxima FROM archivo WHERE id = 1;");
+        lifes = DatabaseManager.Instance.GetInt("SELECT max_health FROM file WHERE id = 1;");
         actual_lifes = lifes;
 
-        LoadFromDatabase();
+        //LoadFromDatabase();
 
-        transform.position = CargarPuntoControlDesdeDB();
+        transform.position = GetPuntoControlDesdeDB();
         pauseManager = FindObjectOfType<PauseManager>();
-        StartCoroutine(ActualizarCantidadFeruCadaMedioSegundo());
+        StartCoroutine(ActualizarCantidadesCadaMedioSegundo());
+
+        faseActual = DatabaseManager.Instance.GetString("SELECT phase FROM file WHERE id = 1;");
     }
 
     void SetDictionaries(){
         // ALOMANCIA, FERUQUIMIA Y HEMALURGIA
         for (int i = 1; i <= 8; i++){
-            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_archivo WHERE archivo_id = 1 AND slot_a = {i};");
+            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_file WHERE file_id = 1 AND slot_a = {i};");
             slotMetalAlo.Add(i,metalId==-1?0:metalId);
         }
         for (int i = 1; i <= 4; i++){
-            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_archivo WHERE archivo_id = 1 AND slot_f = {i};");
+            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_file WHERE file_id = 1 AND slot_f = {i};");
             slotMetalFeru.Add(i,metalId==-1?0:metalId);
         }
         for (int i = 1; i <= 7; i++){
-            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_archivo WHERE archivo_id = 1 AND slot_h = {i};");
+            int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_file WHERE file_id = 1 AND slot_h = {i};");
             slotMetalHema.Add(i,metalId==-1?0:metalId);
         }
 
         // VIALES
-        int numViales = DatabaseManager.Instance.GetInt($"SELECT viales FROM archivo WHERE id = 1;");
+        int numViales = DatabaseManager.Instance.GetInt($"SELECT vials FROM file WHERE id = 1;");
         for(int i = 1; i <= 6; i++){
             vialesVida.Add(i, i <=numViales ? 1 : -1);
         }
+
+        // OBJETOS
+        List<int> idObjetosDesbloqueados = DatabaseManager.Instance.GetIntListFromQuery("SELECT object_id FROM unlocked_object WHERE file_id = 1;");
+        foreach(int i in idObjetosDesbloqueados){
+            Dictionary<string,object> objetoRaw = DatabaseManager.Instance.GetSingleRowFromQuery($"SELECT * FROM object WHERE id = {i}");
+
+            objetosDesbloqueados.Add(new Objeto(Convert.ToInt32(objetoRaw["id"]), objetoRaw["name"].ToString(), objetoRaw["description"].ToString()));
+        }
     }
 
-    public Vector3 CargarPuntoControlDesdeDB(){
+    public Vector3 GetPuntoControlDesdeDB(){
         Vector3 posicion = Vector3.zero;
 
-        int lastCheckpoint = DatabaseManager.Instance.GetInt($"SELECT punto_control_id FROM archivo WHERE id = 1;");
+        int lastCheckpoint = DatabaseManager.Instance.GetInt($"SELECT checkpoint_id FROM file WHERE id = 1;");
 
-        string queryX = "SELECT posicion_x FROM punto_control WHERE id = @param0";
-        object resultadoX = DatabaseManager.Instance.ExecuteScalar(queryX, lastCheckpoint);
-        string queryY = "SELECT posicion_y FROM punto_control WHERE id = @param0";
-        object resultadoY = DatabaseManager.Instance.ExecuteScalar(queryY, lastCheckpoint);
+        Debug.Log($"EL ID DEL CHECKPOINT: {lastCheckpoint}");
+
+        string queryX = $"SELECT x_pos FROM checkpoint WHERE id = {lastCheckpoint}";
+        object resultadoX = DatabaseManager.Instance.ExecuteScalar(queryX);
+        string queryY = $"SELECT y_pos FROM checkpoint WHERE id = {lastCheckpoint}";
+        object resultadoY = DatabaseManager.Instance.ExecuteScalar(queryY);
 
         if (resultadoX == null || resultadoY == null){
             Debug.LogError("No se pudo recuperar la posición del punto de control desde la base de datos.");
@@ -201,23 +266,12 @@ public class PlayerScript : MonoBehaviour
         return posicion;
     }
 
-
-    public void LoadFromDatabase(){
-        object saludMaxima = DatabaseManager.Instance.ExecuteScalar("SELECT salud_maxima FROM archivo WHERE id = 1;");
-        object puntoControl = DatabaseManager.Instance.ExecuteScalar("SELECT punto_control_id FROM archivo WHERE id = 1;");
-
-        if (saludMaxima != null && saludMaxima != DBNull.Value)
-            PlayerPrefs.SetInt("Health", Convert.ToInt32(saludMaxima));
-        else
-            PlayerPrefs.SetInt("Health", 50); // Valor por defecto si no hay datos en la BD
-
-        if (puntoControl != null && puntoControl != DBNull.Value)
-            PlayerPrefs.SetInt("LastCheckpoint", Convert.ToInt32(puntoControl));
-        else
-            PlayerPrefs.SetInt("LastCheckpoint", 0);
-    }
-
     void SetMetales(){
+        cantidadesAlo.Clear();
+        capacidadesAlo.Clear();
+        estadoSlotAlo.Clear();
+        velocidadQuemado.Clear();
+        
         cantidadesFeru.Clear();
         capacidadesFeru.Clear();
         velocidadGuardado.Clear();
@@ -225,110 +279,125 @@ public class PlayerScript : MonoBehaviour
         estadoSlotFeru.Clear();
 
         for(int i = 0 ; i < metales.Length ; i++){
-            int cantidadF = DatabaseManager.Instance.GetInt($"SELECT cantidad_f FROM metal_archivo WHERE archivo_id = 1 AND nombre = '{metales[i]}';");
+            int cantidadA = DatabaseManager.Instance.GetInt($"SELECT mf.amount_a "+
+                                                            $"FROM metal_file mf "+
+                                                            $"JOIN metals m ON mf.metal_id = m.id "+
+                                                            $"WHERE mf.file_id = 1 AND m.name = '{metales[i]}';");
+            cantidadesAlo.Add(metales[i], cantidadA);
+            int capacidadA = DatabaseManager.Instance.GetInt($"SELECT mf.capacity_a "+
+                                                            $"FROM metal_file mf "+
+                                                            $"JOIN metals m ON mf.metal_id = m.id "+
+                                                            $"WHERE mf.file_id = 1 AND m.name = '{metales[i]}';");
+            capacidadesAlo.Add(metales[i], capacidadA);
+
+            int cantidadF = DatabaseManager.Instance.GetInt($"SELECT mf.amount_f "+
+                                                            $"FROM metal_file mf "+
+                                                            $"JOIN metals m ON mf.metal_id = m.id "+
+                                                            $"WHERE mf.file_id = 1 AND m.name = '{metales[i]}';");
             cantidadesFeru.Add(metales[i], cantidadF);
-            int capacidadF = DatabaseManager.Instance.GetInt($"SELECT capacidad_f FROM metal_archivo WHERE archivo_id = 1 AND nombre = '{metales[i]}';");
+            int capacidadF = DatabaseManager.Instance.GetInt($"SELECT mf.capacity_f "+
+                                                            $"FROM metal_file mf "+
+                                                            $"JOIN metals m ON mf.metal_id = m.id "+
+                                                            $"WHERE mf.file_id = 1 AND m.name = '{metales[i]}';");
             capacidadesFeru.Add(metales[i], capacidadF);
 
             // Asignación de velocidades de guardado y decantado, estas pueden ser definidas según tu lógica de juego
+            velocidadQuemado.Add(metales[i], ObtenerVelocidadQuemado(metales[i]));
+
             velocidadGuardado.Add(metales[i], ObtenerVelocidadGuardado(metales[i]));
             velocidadDecantado.Add(metales[i], ObtenerVelocidadDecantado(metales[i]));
+        }
+        for(int i = 1; i <= 8 ; i++){
+            estadoSlotAlo.Add(i,0);
         }
         for(int i = 1; i <= 4 ; i++){
             estadoSlotFeru.Add(i,0);
         }
     }
 
-    int ObtenerVelocidadGuardado(string metal) {
+    int ObtenerVelocidadQuemado(string metal) {
         switch (metal) {
             case "Oro": return 1;
             case "Aluminio": return 2;
             case "Atium": return 1;
-            // Agregar más metales y sus velocidades
-            default: return 3; // Valor por defecto
+            
+            default: return 3;
+        }
+    }
+
+    int ObtenerVelocidadGuardado(string metal) {
+        switch (metal) {
+            case "Hierro": return 3;
+            case "Acero": return 3;
+            case "Estaño": return 2;
+            case "Peltre": return 1;
+            case "Zinc": return 3;
+            case "Latón": return 3;
+            case "Cobre": return 2;
+            case "Bronce": return 2;
+            case "Cadmio": return 1;
+            case "Bendaleo": return 4;
+            case "Oro": return 1;
+            case "Electro": return 1;
+            case "Cromo": return 2;
+            case "Nicrosil": return 2;
+            case "Aluminio": return 2;
+            case "Duraluminio": return 2;
+            case "Atium": return 1;
+            default: return 0;
         }
     }
 
     int ObtenerVelocidadDecantado(string metal) {
         switch (metal) {
+            case "Hierro": return 2;
+            case "Acero": return 3;
+            case "Estaño": return 1;
+            case "Peltre": return 5;
+            case "Zinc": return 2;
+            case "Latón": return 2;
+            case "Cobre": return 1;
+            case "Bronce": return 1;
+            case "Cadmio": return 1;
+            case "Bendaleo": return 4;
             case "Oro": return 6;
+            case "Electro": return 3;
+            case "Cromo": return 4;
+            case "Nicrosil": return 4;
             case "Aluminio": return 4;
+            case "Duraluminio": return 6;
             case "Atium": return 6;
-            // Agregar más metales y sus velocidades
-            default: return 1; // Valor por defecto
+            default: return 1;
         }
     }
 
     public void OnFeruUp(InputAction.CallbackContext context){
         if (context.started && !pauseManager.isPaused){
-            ChangeEstadoSlotFeru(1);
+            pd.ChangeFeruMetalStatus(1);
         }
     }
     public void OnFeruRight(InputAction.CallbackContext context){
         if (context.started && !pauseManager.isPaused){
-            ChangeEstadoSlotFeru(2);
+            pd.ChangeFeruMetalStatus(2);
         }
     }
     public void OnFeruDown(InputAction.CallbackContext context){
         if (context.started && !pauseManager.isPaused){
-            ChangeEstadoSlotFeru(3);
+            pd.ChangeFeruMetalStatus(3);
         }
     }
     public void OnFeruLeft(InputAction.CallbackContext context){
         if (context.started && !pauseManager.isPaused){
-            ChangeEstadoSlotFeru(4);
+            pd.ChangeFeruMetalStatus(4);
         }
     }
 
-    void ChangeEstadoSlotFeru(int slot){
-        int metalId = slotMetalFeru[slot];
-        string nombreMetal = GetNombreMetal(metalId);
-
-        if(metalId != null){
-            estadoSlotFeru[slot] += 1;
-            if(estadoSlotFeru[slot] > 1){
-                estadoSlotFeru[slot] = -1;
-            }
-            if(estadoSlotFeru[slot] == 1 && cantidadesFeru[nombreMetal] == capacidadesFeru[nombreMetal]){
-                estadoSlotFeru[slot] = 0;
-            }
-            if(estadoSlotFeru[slot] == -1 && cantidadesFeru[nombreMetal] == 0){
-                estadoSlotFeru[slot] = 0;
-            }
-        }
-    }
-
-    IEnumerator ActualizarCantidadFeruCadaMedioSegundo() {
+    IEnumerator ActualizarCantidadesCadaMedioSegundo() {
         while (true) {
-            for (int i = 1; i <= estadoSlotFeru.Count; i++) {
-                ModifyCantidadFeru(i);
+            for (int i = 1; i <= pd.GetFeruSlots().Length; i++) {        
+                pd.GetFeruMetalInSlot(i)?.UseMetalmind();
             }
             yield return new WaitForSeconds(0.5f);
-        }
-    }
-
-    void ModifyCantidadFeru(int slot) {
-        int metalId = slotMetalFeru[slot];
-        string nombreMetal = GetNombreMetal(metalId);
-
-        if(nombreMetal != null){
-            if (estadoSlotFeru[slot] == 1 && cantidadesFeru[nombreMetal] < capacidadesFeru[nombreMetal]){
-                int velocidad = velocidadGuardado.ContainsKey(nombreMetal) ? velocidadGuardado[nombreMetal] : 1;
-                cantidadesFeru[nombreMetal] += estadoSlotFeru[slot] * velocidad;
-                if(cantidadesFeru[nombreMetal] > capacidadesFeru[nombreMetal]){
-                    cantidadesFeru[nombreMetal] = capacidadesFeru[nombreMetal];
-                    estadoSlotFeru[slot] = 0;
-                }
-            }else if (estadoSlotFeru[slot] == -1 && cantidadesFeru[nombreMetal] > 0){
-                int velocidad = velocidadDecantado.ContainsKey(nombreMetal) ? velocidadDecantado[nombreMetal] : 1;
-                cantidadesFeru[nombreMetal] += estadoSlotFeru[slot] * velocidad;
-                if(cantidadesFeru[nombreMetal] <= 0){
-                    cantidadesFeru[nombreMetal] = 0;
-                    estadoSlotFeru[slot] = 0;
-                }
-            }
-        }else{
-            estadoSlotFeru[slot] = 0;
         }
     }
 
@@ -348,7 +417,6 @@ public class PlayerScript : MonoBehaviour
                     Move();
                     Jump();
                     Attack1();
-                    //Hurt();
                 }
 
                 if(playerAnimator.GetCurrentAnimatorStateInfo(0).IsName("Vin_Attacking") && playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.75f && playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f){
@@ -360,7 +428,6 @@ public class PlayerScript : MonoBehaviour
                 }
             }
         }
-        SetMetalWheel();
 
         curacionOroTiempo = HasClavo("Electro") ? 15 : 20;
         if (HasClavo("Oro")) {
@@ -384,10 +451,15 @@ public class PlayerScript : MonoBehaviour
             curacionOroTiempoTranscurrido = curacionOroTiempo;
         }
     }
+
     private void SetMetalWheel(){
-        for(int i = 1; i <= slotsMetalWheel.Length; i++){
-            // int idMetal = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_archivo WHERE archivo_id = 1 AND slot_a = {i};");
-            int idMetal = slotMetalAlo[i];
+        for(int i = 1; i <= pd.GetAloSlots().Length; i++){
+            AloMetal am = pd.GetAloMetalInSlot(i);
+            int idMetal = 0;
+            if(am != null){
+                idMetal = (int)am.GetMetal();
+            }
+
             if(idMetal <= 0){
                 Color c = slotsMetalWheel[i-1].color;
                 Color cM = slotsMetalWheelMenu[i-1].color;
@@ -405,18 +477,48 @@ public class PlayerScript : MonoBehaviour
                 slotsMetalWheel[i-1].sprite = spritesMetales[idMetal - 1];
                 slotsMetalWheelMenu[i-1].sprite = spritesMetales[idMetal - 1];
                 if(i == selectedAloMetalSlot){
-                    slotsMetalWheel[i-1].color = Color.red;
-                    slotsMetalWheelMenu[i-1].color = Color.red;
+                    if(!am.IsBurning()){
+                        slotsMetalWheel[i-1].color = Color.red;
+                        slotsMetalWheelMenu[i-1].color = Color.white;
+                    }else{
+                        slotsMetalWheel[i-1].color = new Color(1f, .5f, .5f, 1f);
+                        slotsMetalWheelMenu[i-1].color = new Color(1f, .5f, 0f, 1f);
+                    }
+                    Image cantMetal = barraRueda.transform.GetChild(0).GetComponent<Image>();
+                    Image capMetal = barraRueda.transform.GetChild(1).GetComponent<Image>();
+
+                    float cant = (float)am.GetAmount();
+                    float cap = (float)am.GetCapacity();
+                    
+                    if(selectedAloMetalSlot < 1){
+                        capMetal.gameObject.SetActive(false);
+                        cantMetal.gameObject.SetActive(false);
+                    }else{
+                        capMetal.gameObject.SetActive(true);
+                        cantMetal.gameObject.SetActive(true);
+                        float fillAmount = cant / cap;
+                        capMetal.sprite = spritesBarrasMetales[idMetal - 1];
+                        cantMetal.fillAmount = fillAmount;
+                    }
+
+                    txtMetalRueda.text = $"<b>{metales[idMetal-1]}</b><br>" +
+                     $"<size=16>{descripcionMetalAlo[idMetal-1]}</size><br>"+
+                     $"<size=16>{cant} - {cap}</size>";
                 }else{
-                    slotsMetalWheel[i-1].color = Color.white;
-                    slotsMetalWheelMenu[i-1].color = Color.white;
+                    if(!am.IsBurning()){
+                        slotsMetalWheel[i-1].color = Color.white;
+                        slotsMetalWheelMenu[i-1].color = Color.white;
+                    }else{
+                        slotsMetalWheel[i-1].color = new Color(1f, .5f, 0f, 1f);
+                        slotsMetalWheelMenu[i-1].color = new Color(1f, .5f, 0f, 1f);
+                    }
                 }
             }
         }
     }
 
     public void OnOpenMetalWheel(InputAction.CallbackContext context){
-        if (context.started){
+        if (context.started && !pauseManager.isPaused){
             selectingMetal = true;
             cvMetalWheel.SetActive(true);
             Time.timeScale = 0.2f;
@@ -455,11 +557,19 @@ public class PlayerScript : MonoBehaviour
             }else if(-.9<X && X<-.3 && .3<Y && Y<.9){
                 selectedAloMetalSlot = 8;
             }
-            Debug.Log($"selectedAloMetalSlot: {selectedAloMetalSlot}");
         }
     }
 
+    void SelectAloMetal(){
+        pd.ChangeAloMetalBurning(selectedAloMetalSlot);
+    }
+
     public void OnMove(InputAction.CallbackContext context){
+        if(selectingMetal){
+            movementInput.x = 0;
+            movementInput.y = 0;
+            return;
+        }
         movementInput = context.ReadValue<Vector2>();
     }
     void Move(){
@@ -483,6 +593,12 @@ public class PlayerScript : MonoBehaviour
     }
 
     public void OnJump(InputAction.CallbackContext context){
+        if(context.started && selectingMetal){
+            Debug.Log("SELECCIONANDO EL METAL ALOMÁNTICO");
+            SelectAloMetal();
+            return;
+        }
+
         if (context.started && !pauseManager.isPaused) {
             if (grounded){
                 jumped = true;
@@ -540,27 +656,12 @@ public class PlayerScript : MonoBehaviour
     }
 
     private void Heal(){
-        int vialDisponible = 0;
-        foreach (var kvp in vialesVida){
-            int numVial = kvp.Key;
-            int estadoV = kvp.Value;
-
-            if(estadoV != -1 && estadoV != 0){
-                vialDisponible = numVial;
-            }
-        }
-        if(vialDisponible != 0){
-            vialesVida[vialDisponible] = 0;
-            int potencia = DatabaseManager.Instance.GetInt("SELECT potencia_vial FROM archivo WHERE id = 1;");
-            actual_lifes+=potencia;
-            if(actual_lifes > lifes){
-                actual_lifes = lifes;
-            }
-        }
+        pd.UseVial();
     }
 
     public void OnEnterFuente(InputAction.CallbackContext context){
-        enterFuente = context.action.triggered;
+        if(!selectingMetal)
+            enterFuente = context.action.triggered;
     }
 
     void Fuente() {
@@ -574,32 +675,23 @@ public class PlayerScript : MonoBehaviour
             speed = 0;
         }
         if (enterFuente && inFuente) {
-            SaveToDatabase();
-            List<int> vialesParaRestaurar = new List<int>();
-            foreach (var kvp in vialesVida){
-                if (kvp.Value != -1){
-                    vialesParaRestaurar.Add(kvp.Key);
-                }
-            }
-
-            foreach (int numVial in vialesParaRestaurar){
-                vialesVida[numVial] = 1;
-            }
+            // pd.SaveToDatabase();
+            pd.EnterFuente();
             speed = 0;
 
             DatabaseManager.Instance.ExecuteNonQuery(
-                $"UPDATE archivo SET salud_maxima = {lifes} WHERE id = 1;"
+                $"UPDATE file SET max_health = {lifes} WHERE id = 1;"
             );
             actual_lifes = lifes;
             
             canExitFuente = false;
             enterFuente = false;
             StartCoroutine(EnableExitFuente(1f));
-            int visited = (int)(long)DatabaseManager.Instance.ExecuteScalar("SELECT COUNT(*) FROM punto_control_visitado WHERE archivo_id = 1 AND punto_control_id = "+fuenteActual+";");
+            int visited = (int)(long)DatabaseManager.Instance.ExecuteScalar("SELECT COUNT(*) FROM visited_checkpoint WHERE file_id = 1 AND checkpoint_id = "+fuenteActual+";");
             if(visited == 0){
-                DatabaseManager.Instance.ExecuteNonQuery("INSERT INTO punto_control_visitado (archivo_id, punto_control_id) VALUES (1, "+fuenteActual+");");
+                DatabaseManager.Instance.ExecuteNonQuery("INSERT INTO visited_checkpoint (file_id, checkpoint_id) VALUES (1, "+fuenteActual+");");
             }
-            DatabaseManager.Instance.ExecuteNonQuery($"UPDATE archivo SET punto_control_id = {fuenteActual} WHERE id = 1;");
+            DatabaseManager.Instance.ExecuteNonQuery($"UPDATE file SET checkpoint_id = {fuenteActual} WHERE id = 1;");
         }
 
         if (canExitFuente && (movementInput.x != 0 || jumped || doubleJumped) && inFuente) {
@@ -619,12 +711,12 @@ public class PlayerScript : MonoBehaviour
             string nombreMetal = kvp.Key;
             int cantidad = kvp.Value;
 
-            string query = $"UPDATE metal_archivo SET cantidad_f = {cantidad} WHERE archivo_id = 1 AND nombre = '{nombreMetal}';";
+            string query = $"UPDATE metal_file SET amount_f = {cantidad} WHERE file_id = 1 AND name = '{nombreMetal}';";
             DatabaseManager.Instance.ExecuteNonQuery(query);
         }
 
         DatabaseManager.Instance.ExecuteNonQuery(
-            "UPDATE metal_archivo SET slot_a = 0 WHERE archivo_id = 1;"
+            "UPDATE metal_file SET slot_a = 0 WHERE file_id = 1;"
         );
         foreach (var kvp in slotMetalAlo){
             int slot = kvp.Key;
@@ -633,13 +725,13 @@ public class PlayerScript : MonoBehaviour
             string query = "";
             // Debug.Log($"metal: {nombreMetal} - cantidad: {cantidad}");
             if(metalId != 0){
-                query = $"UPDATE metal_archivo SET slot_a = {slot} WHERE archivo_id = 1 AND metal_id = '{metalId}';";
+                query = $"UPDATE metal_file SET slot_a = {slot} WHERE file_id = 1 AND metal_id = '{metalId}';";
                 DatabaseManager.Instance.ExecuteNonQuery(query);
             }
         }
 
         DatabaseManager.Instance.ExecuteNonQuery(
-            "UPDATE metal_archivo SET slot_f = 0 WHERE archivo_id = 1;"
+            "UPDATE metal_file SET slot_f = 0 WHERE file_id = 1;"
         );
         foreach (var kvp in slotMetalFeru){
             int slot = kvp.Key;
@@ -648,13 +740,13 @@ public class PlayerScript : MonoBehaviour
             string query = "";
             // Debug.Log($"metal: {nombreMetal} - cantidad: {cantidad}");
             if(metalId != 0){
-                query = $"UPDATE metal_archivo SET slot_f = {slot} WHERE archivo_id = 1 AND metal_id = '{metalId}';";
+                query = $"UPDATE metal_file SET slot_f = {slot} WHERE file_id = 1 AND metal_id = '{metalId}';";
                 DatabaseManager.Instance.ExecuteNonQuery(query);
             }
         }
 
         DatabaseManager.Instance.ExecuteNonQuery(
-            "UPDATE metal_archivo SET slot_h = 0 WHERE archivo_id = 1;"
+            "UPDATE metal_file SET slot_h = 0 WHERE file_id = 1;"
         );
         foreach (var kvp in slotMetalHema){
             int slotHema = kvp.Key;
@@ -663,7 +755,7 @@ public class PlayerScript : MonoBehaviour
             string query = "";
             // Debug.Log($"metal: {nombreMetal} - cantidad: {cantidad}");
             if(metalId != 0){
-                query = $"UPDATE metal_archivo SET slot_h = {slotHema} WHERE archivo_id = 1 AND metal_id = '{metalId}';";
+                query = $"UPDATE metal_file SET slot_h = {slotHema} WHERE file_id = 1 AND metal_id = '{metalId}';";
                 DatabaseManager.Instance.ExecuteNonQuery(query);
             }
         }
@@ -678,7 +770,7 @@ public class PlayerScript : MonoBehaviour
             }
         }
         DatabaseManager.Instance.ExecuteNonQuery(
-            $"UPDATE archivo SET viales = {vialesDesbloqueados} WHERE id = 1;"
+            $"UPDATE file SET vials = {vialesDesbloqueados} WHERE id = 1;"
         );
         
         Debug.Log("Datos guardados en la base de datos.");
@@ -757,26 +849,24 @@ public class PlayerScript : MonoBehaviour
 
 
     void OnTriggerEnter2D(Collider2D other){
-        if (other.tag == "Enemy_Attack" && !dead){
-            Debug.Log("other: " + other.transform.parent);
+        // if (other.tag == "Enemy_Attack" && !dead){
+        //     Debug.Log("other: " + other.transform.parent);
 
-            IAttacker attacker = other.GetComponentInParent<IAttacker>();
+        //     IAttacker attacker = other.GetComponentInParent<IAttacker>();
 
-            if (attacker != null){
-                int damage = attacker.GetDamage();
-                Debug.Log("Damage taken: " + damage);
-                Hurt(damage);
-            }else{
-                Debug.LogWarning("El objeto atacante no implementa IAttacker.");
-            }
-        }
+        //     if (attacker != null){
+        //         int damage = attacker.GetDamage();
+        //         Debug.Log("Damage taken: " + damage);
+        //         Hurt(damage);
+        //     }else{
+        //         Debug.LogWarning("El objeto atacante no implementa IAttacker.");
+        //     }
+        // }
 
         if (other.tag == "Fuente" && !dead) {
             inFuente = true;
-            // Intentar convertir la segunda parte del nombre a un número entero
             string[] nombrePartes = other.name.Split(" ");
             if (nombrePartes.Length > 1) {
-                // Intentar convertir a int
                 int fuenteID;
                 if (int.TryParse(nombrePartes[1], out fuenteID)) {
                     fuenteActual = fuenteID;
@@ -821,18 +911,6 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    public void OnNPC(InputAction.CallbackContext context){
-        // if (nearAnyNPC && context.action.triggered){
-        //     inNPC = true;
-        //     var npcBehaviour = nearNPC.GetComponent<NPCBehaviour>();
-        //     if (npcBehaviour != null){
-        //         npcBehaviour.StartDialogue();
-        //     }
-        //     Debug.Log("Interactuando o ya vo sabe");
-        //     speed = 0;
-        // }
-    }
-
     public void OnNextFrase(InputAction.CallbackContext context){
         if(nearAnyNPC && inNPC && context.action.triggered){
             nextFrase = true;
@@ -842,7 +920,7 @@ public class PlayerScript : MonoBehaviour
     }
 
     bool HasClavo(string metal){
-        int metalId = DatabaseManager.Instance.GetInt($"SELECT metal_id FROM metal_archivo WHERE archivo_id = 1 AND nombre = '{metal}';");
+        int metalId = GetIdMetal(metal);
         int slotOcupado = -1;
         foreach (var kv in slotMetalHema) {
             if (kv.Value == metalId) {
@@ -853,9 +931,71 @@ public class PlayerScript : MonoBehaviour
         return slotOcupado != 0;
     }
 
-    string GetNombreMetal(int metalId){
+    public string GetNombreMetal(int metalId){
         return DatabaseManager.Instance.GetString(
-            $"SELECT nombre FROM metal_archivo WHERE archivo_id = 1 AND metal_id = {metalId};"
+            $"SELECT name FROM metal_file WHERE file_id = 1 AND metal_id = {metalId};"
         );
+    }
+    public int GetIdMetal(string nombreMetal){
+        // Debug.Log($"nombreMetal: {nombreMetal}");
+        return DatabaseManager.Instance.GetInt($"SELECT id FROM metals WHERE name = '{nombreMetal}';");
+    }
+
+    public int GetNumClavos(){
+        int acu = 0;
+        foreach (var kv in slotMetalHema){
+            if (kv.Value > 0){
+                acu++;
+            }
+        }
+        return acu;
+    }
+
+    public bool QuemandoMetal(string nombreMetal){
+        int idMetal = GetIdMetal(nombreMetal);
+        foreach(var kv in slotMetalAlo){
+            if (kv.Value == idMetal){
+                int slot = kv.Key;
+                if(estadoSlotAlo[slot] == 1 && cantidadesAlo[nombreMetal]>0){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    void OnEnable() {
+        GameEvents.OnNPCSpokenTo += RegistrarDialogoConNPC;
+    }
+
+    void OnDisable() {
+        GameEvents.OnNPCSpokenTo -= RegistrarDialogoConNPC;
+    }
+
+    void RegistrarDialogoConNPC(string eventName){
+        Debug.Log($"evento disparado: {eventName}");
+
+        string nombreEvento = $"{eventName}";
+
+        pd.AddEvent(eventName);
+
+        // int count = DatabaseManager.Instance.GetInt($@"
+        //     SELECT COUNT(*) FROM achieved_event 
+        //     WHERE file_id = {pd.GetFileId()} 
+        //     AND event_id = (SELECT id FROM event WHERE name = '{nombreEvento}');
+        // ");
+
+        // if (count == 0){
+        //     DatabaseManager.Instance.ExecuteNonQuery($@"
+        //         INSERT INTO achieved_event (file_id, event_id)
+        //         VALUES (
+        //             {pd.GetFileId()},
+        //             (SELECT id FROM event WHERE name = '{nombreEvento}')
+        //         );
+        //     ");
+        //     Debug.Log($"Evento '{nombreEvento}' registrado para file_id {pd.GetFileId()}");
+        // } else {
+        //     Debug.Log($"Evento '{nombreEvento}' ya estaba registrado.");
+        // }
     }
 }

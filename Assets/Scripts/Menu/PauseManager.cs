@@ -44,13 +44,13 @@ public class PauseManager : MonoBehaviour{
         "Enardece las emociones del objetivo.\nTal es el efecto sobre las empciones que puede volver hostil al objetivo contra sus aliados.",
 
         // Latón
-        "Apacigua las emociones del objetivo.\nDependiendo del objetivo, puede o hacer menos daño al brumoso o ignorarlo por completo.",
+        "Apacigua las emociones del objetivo.\nDependiendo del objetivo, puede provocarle menos daño al brumoso o ignorarlo por completo.",
 
         // Cobre
         "Oculta la alomancia del brumoso.\nEsto permite ocultar al brumoso de los enemigos que puedan detectar la alomancia.",
 
         // Bronce
-        "Muestra la alomancia de los brumosos cercanos.\nPermite conocer la alomancia que usan los brumosos cercanos.",
+        "Muestra la alomancia de los brumosos cercanos.\nPermite detectar y conocer la alomancia de los brumosos cercanos.",
 
         // Cadmio
         "Crea una burbuja alrededor del brumoso que ralentiza el tiempo en su interior.\nLa percepción es que el tiempo fuera de la burbuja se acelera.",
@@ -117,55 +117,60 @@ public class PauseManager : MonoBehaviour{
 
         // Pulsera de Zinc
         "Con un diseño intrincado, elegante pero hasta cierto punto, simple.\n" +
-        "Almacena tu energía mental, permitiendo reducir drásticamente el tiempo de reutilización de tus habilidades.",
+        "???",
+        // "Almacena tu energía mental, permitiendo reducir drásticamente el tiempo de reutilización de tus habilidades.",
 
         // Bracil de Latón
         "Un bracil de latón con un leve calor constante.\n" +
         "Guarda tu calma y carisma, haciendo que los enemigos pequeños te ignoren y facilitando la persuasión con NPCs.",
 
         // Brazal de Cobre
-        "Un brazal de cobre, opaco y discreto.\n" +
-        "Oculta tu presencia del mundo por un tiempo, permitiéndote moverte sin ser detectado.",
+        "Entregado por el bibliotecario, su diseño discreto y digno guarda similitud con aquel que la otrogó.\n" +
+        "Almacena recuerdos y conocimiento, pudiendo mantenerlos intactos hasta que se decanten",
 
         // Pulsera de Bronce
         "Una pulsera de bronce con un extraño fulgor.\n" +
-        "Almacena tu atención a los detalles, revelando la ubicación de enemigos que intentan ocultarse.",
+        "???",
+        // "Almacena tu atención a los detalles, revelando la ubicación de enemigos que intentan ocultarse.",
 
         // Brazalete de Cadmio
         "Un brazalete de cadmio, frío al tacto.\n" +
-        "Retiene el flujo del tiempo a tu alrededor, permitiéndote congelar el mundo por un instante.",
+        "Guarda alienta, obligando a tomar aire con asiduidad, cuando se es decantado no se requiere respirar con tanta frecuencia.",
 
         // Bracil de Bendaleo
         "Un bracil de bendaleo con una forma fluida.\n" +
-        "Almacena tu estabilidad y la desata al instante, permitiéndote recuperarte rápidamente de cualquier aturdimiento.",
+        "???",
+        // "Almacena tu estabilidad y la desata al instante, permitiéndote recuperarte rápidamente de cualquier aturdimiento.",
 
         // Ajorca de Oro
         "Una ajorca de oro con un brillo sanador.\n" +
-        "Guarda tu vitalidad y la devuelve cuando la necesites, restaurando tu salud.",
+        "Mientras se esté guardando, el portador se sentirá débil y enfermo, al extraer su contenido las heridas sanarán más rápido.",
 
         // Brazalete de Electro
         "Un brazalete de electro que emana una sensación de abundancia.\n" +
-        "Almacena la suerte en la obtención de recursos, permitiéndote duplicar lo que consigues.",
+        "Cuando se esté almacenando, cualquier empujón puede hacer perder el equilibrio, pero más difícil será perderlo cuando se decante.",
 
         // Brazal de Cromo
-        "Una escarpia de cromo con un diseño absorbente.\n" +
-        "Drena la energía almacenada en los demás, vaciando sus reservas en un instante.",
+        "Un brazal de cromo con un diseño absorbente.\n" +
+        "La fortuna y copiosidad de lo encontrado se verá reducida mientras se esté guardando, mientras que aumentará al extraerla.",
 
         // Esclava de Nicrosil
         "Un clavo de nicrosil que parece vibrar con poder.\n" +
-        "Desata una explosión de energía que aturde a todos los enemigos cercanos.",
+        "La alomancia será afectada negativamente mientras se almacene, pero más poderosa cuando se educe.",
 
         // Brazalete de Aluminio
         "Un tornillo de aluminio con un brillo apagado.\n" +
-        "Cancela todas las alteraciones en tu mente, restaurando tu estabilidad y reiniciando el ciclo de locura.",
+        "Al guardarse, la identidad propia se verá absorbida, permitiendo crear mentes de metal sin dueño pero facilita el influjo de la hemalurgia, "+
+        "al decantarse, el efecto de la hemalurgia se revertirá.",
 
         // Pulsera de Duraluminio
         "Una alcayata de duraluminio de aspecto resistente.\n" +
-        "Intensifica tus habilidades alománticas, permitiéndote desatar su máximo potencial.",
+        "La conexión que se pueda tener con el entorno se reducirá al guardarse, aumentando la hostilidad de los transeuntes, mientras que al extraerse hará que sean más cercanos.",
 
         // Esclava de Atium
         "Una escarpia de atium, extremadamente rara y valiosa.\n" +
-        "Guarda un fragmento de una existencia ajena, otorgándote una segunda oportunidad al borde de la muerte."
+        "Guarda la vida que te queda aún por vivir sin efecto aparente, pero al decantarla, puede llegar a salvarte de una muerte segura."
+        // "Guarda un fragmento de una existencia ajena, otorgándote una segunda oportunidad al borde de la muerte."
     };
     private string[] nombreMetalHema = new string[] {
         "Clavo de Hierro",
@@ -273,8 +278,6 @@ public class PauseManager : MonoBehaviour{
     private bool canChangeMetal = true;
     private bool canChangeObjeto = true;
 
-    private bool inMetales = false;
-
     private bool inMetalPage = false;
     private bool[] inWhatMetalPage = {false, false, false};
 
@@ -295,9 +298,10 @@ public class PauseManager : MonoBehaviour{
 
 
     PlayerScript playerScript;
-    public Dictionary<int, int> slotMetalAlo = new Dictionary<int, int>();
-    public Dictionary<int,int> slotMetalFeru = new Dictionary<int, int>();
-    public Dictionary<int, int> slotMetalHema = new Dictionary<int, int>();
+    
+    public Dictionary<string,int> cantidadesAlo = new Dictionary<string, int>();
+    public Dictionary<string,int> capacidadesAlo = new Dictionary<string, int>();
+
     public Image[] slotsHemaImages;
     public Sprite[] spritesHema;
 
@@ -307,6 +311,29 @@ public class PauseManager : MonoBehaviour{
     public Sprite selectedFrame;
     public Sprite notSelectedFrame;
     public Sprite[] objetosSprite;
+
+    public GameObject rellenos;
+    Dictionary<string, string> coloresMetales = new Dictionary<string, string>(){
+        {"Hierro", "#4B4B4B"},
+        {"Acero", "#A9A9A9"},
+        {"Estaño", "#708090"},
+        {"Peltre", "#B0C4DE"},
+        {"Zinc", "#808000"},
+        {"Latón", "#DAA520"},
+        {"Cobre", "#B87333"},
+        {"Bronce", "#CD7F32"},
+        {"Cadmio", "#6A5ACD"},
+        {"Bendaleo", "#9370DB"},
+        {"Oro", "#FFD700"},
+        {"Electro", "#FFB700"},
+        {"Cromo", "#C0C0C0"},
+        {"Nicrosil", "#D3D3D3"},
+        {"Aluminio", "#ADD8E6"},
+        {"Duraluminio", "#4682B4"},
+        {"Atium", "#5EF2DC"},
+    };
+
+    PlayerData pd;
 
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
@@ -324,20 +351,48 @@ public class PauseManager : MonoBehaviour{
     }
 
     public void Update(){
-        slotMetalAlo = playerScript.slotMetalAlo;
-        slotMetalFeru = playerScript.slotMetalFeru;
-        slotMetalHema = playerScript.slotMetalHema;
+        pd = playerScript.pd;
+
         DetectMetalPage();
         isDatos();
         SetFraseHemalurgia();
         UpdateSelection();
         UpdateObjetos();
+        UpdateMetales();
+    }
+
+    private void UpdateMetales(){
+        for(int i = 0; i < rellenos.transform.childCount; i++){
+            Image relleno = rellenos.transform.GetChild(i).GetComponent<Image>();
+
+            string metal = playerScript.GetNombreMetal(i+1);
+
+            float cant = pd.GetMetalById(i+1).GetAmount();
+            float cap = pd.GetMetalById(i+1).GetCapacity();
+            
+            float fillAmount = cant / cap;
+            if(i!=16){
+                fillAmount/=8;
+            }
+            
+            Color color;
+            if (ColorUtility.TryParseHtmlString(coloresMetales[metal], out color)) {
+                relleno.color = color;
+            }
+
+            relleno.fillAmount = fillAmount;
+        }
     }
 
     private void SetFraseHemalurgia(){
-        int sh = DatabaseManager.Instance.GetInt($"SELECT COUNT(*) FROM metal_archivo WHERE archivo_id = 1 AND slot_h != 0;");
+        // int numClavos = 0;
+        // foreach(var clavo in slotMetalHema){
+        //     if(clavo.Value >0){
+        //         numClavos++;
+        //     }
+        // }
         string text = "";
-        switch (sh){
+        switch (pd.GetNailNum()){
             case 0:
                 text = "Puro de Espíritu";
                 break;
@@ -363,20 +418,6 @@ public class PauseManager : MonoBehaviour{
                 break;
         }
         txtEstado.text = text;
-
-        for(int i = 1; i <= 7; i++){
-            if(slotMetalHema[i] != 0){
-                slotsHemaImages[i-1].gameObject.SetActive(true);
-                slotsHemaImages[i-1].sprite = spritesHema[slotMetalHema[i]-1];
-                if(slotMetalHema[i] == selectedMetalIndex + 1){
-                    slotsHemaImages[i-1].color = Color.yellow;
-                }else{
-                    slotsHemaImages[i-1].color = Color.white;
-                }
-            }else{
-                slotsHemaImages[i-1].gameObject.SetActive(false);
-            }
-        }
     }
 
     private void DetectMetalPage(){
@@ -392,7 +433,6 @@ public class PauseManager : MonoBehaviour{
     public void isDatos(){
         GameObject panelActual = menuPanels[currentPanelIndex];
         if (inMetalPage){
-            inMetales = true;
             Transform imagenesMetales = panelActual.transform.Find("ImagenesMetales");
             if (imagenesMetales == null){
                 return;
@@ -407,17 +447,13 @@ public class PauseManager : MonoBehaviour{
 
             for (int j = 0; j < grupoMetal.transform.childCount; j++){
                 bool desbloqueado = (bool)DatabaseManager.Instance.ExecuteScalar(
-                    $"SELECT desbloqueado_{panelActual.name[5].ToString().ToLower()} FROM metal_archivo WHERE archivo_id = 1 AND metal_id = {j + 1};"
+                    $"SELECT unlocked_{panelActual.name[5].ToString().ToLower()} FROM metal_file WHERE file_id = 1 AND metal_id = {j + 1};"
                 );
-
-                Debug.Log($"panelActual.name[5].ToString().ToLower(): {panelActual.name[5].ToString().ToLower()} - {desbloqueado}");
 
                 GameObject metal = grupoMetal.transform.GetChild(j).gameObject;
                 metal.SetActive(desbloqueado);
 
             }
-        }else{
-            inMetales = false;
         }
     }
 
@@ -474,9 +510,8 @@ public class PauseManager : MonoBehaviour{
     }
 
     private void ChangeSelectedObjeto(int deltaX, int deltaY){
-        if(!isPaused) return;
+        if (!isPaused) return;
         if (!canChangeObjeto) {
-            Debug.LogWarning("Cambio de metal bloqueado temporalmente.");
             return;
         }
         if (objetos == null || objetos.Length == 0) return;
@@ -484,21 +519,22 @@ public class PauseManager : MonoBehaviour{
         int maxY = objetos.Length;
         int maxX = objetos[selectedIndexObjetosY].columnas.Length;
 
-        selectedIndexObjetosY = Mathf.Clamp(selectedIndexObjetosY + deltaY, 0, maxY - 1);
+        selectedIndexObjetosY = (selectedIndexObjetosY + deltaY + maxY) % maxY;
 
         maxX = objetos[selectedIndexObjetosY].columnas.Length;
 
-        selectedIndexObjetosX = Mathf.Clamp(selectedIndexObjetosX + deltaX, 0, maxX - 1);
+        selectedIndexObjetosX = (selectedIndexObjetosX + deltaX + maxX) % maxX;
 
         Image imagenSeleccionada = objetos[selectedIndexObjetosY].columnas[selectedIndexObjetosX];
-        
-        foreach(FilaImagenes f in objetos){
-            foreach(Image i in f.columnas){
+
+        foreach (FilaImagenes f in objetos){
+            foreach (Image i in f.columnas){
                 i.sprite = notSelectedFrame;
             }
         }
+
         imagenSeleccionada.sprite = selectedFrame;
-        
+
         canChangeObjeto = false;
         StartCoroutine(ResetChangeObjetoCooldown());
 
@@ -543,57 +579,16 @@ public class PauseManager : MonoBehaviour{
     }
 
     private void Select() {
-        if (inMetalPage && selectedMetalIndex >= 0) {
-            Dictionary<int, int> diccionarioActual = null;
-            int maxSlots = 0;
-
-            // Determinar qué diccionario usar y el número máximo de slots
+        if(inMetalPage && selectedMetalIndex >= 0){
+            Debug.Log($"SELECTED INDEX: {selectedMetalIndex}");
             if (inWhatMetalPage[0]) {
-                diccionarioActual = slotMetalAlo;
-                maxSlots = 8;
-                Debug.Log("Probando como Alo");
+                pd.EquipAloMetal(selectedMetalIndex+1);
             } else if (inWhatMetalPage[1]) {
-                diccionarioActual = slotMetalFeru;
-                maxSlots = 4;
-                Debug.Log("Probando como Feru");
+                pd.EquipFeruMetal(selectedMetalIndex+1);
             } else if (inWhatMetalPage[2]) {
-                diccionarioActual = slotMetalHema;
-                maxSlots = 7;
-                Debug.Log("Probando como Hema");
-            }else{
-                return;
-            }
-
-            if (diccionarioActual == null) {
-                Debug.LogWarning("No se ha podido determinar el tipo de metal.");
-                return;
-            }
-
-            // Buscar si el metal ya está asignado a algún slot
-            int slotUsado = diccionarioActual.FirstOrDefault(kv => kv.Value == selectedMetalIndex + 1).Key;
-
-            Debug.Log("slotUsado: " + slotUsado);
-
-            if (slotUsado > 0) {
-                Debug.Log("El metal está siendo usado");
-                diccionarioActual[slotUsado] = 0; // Lo quitamos del slot
-                Debug.Log("Quitado del set");
-            } else {
-                Debug.Log("El metal NO está siendo usado");
-                for (int i = 1; i <= maxSlots; i++) {
-                    if (!diccionarioActual.ContainsKey(i) || diccionarioActual[i] == 0) {
-                        diccionarioActual[i] = selectedMetalIndex + 1; // Lo asignamos al primer slot libre
-                        Debug.Log("Encontrado slot libre: " + i);
-                        Debug.Log("Añadido al set");
-                        break;
-                    }
-                }
+                pd.EquipHemaMetal(selectedMetalIndex+1);
             }
         }
-        
-        // foreach(var metal in slotMetalHema.Keys){
-        //     Debug.Log($"SELECT METAL PAUSE MANAGER {metal}: {slotMetalHema[metal]}");
-        // }
 
         UpdateSelection();
     }
@@ -601,18 +596,17 @@ public class PauseManager : MonoBehaviour{
 
     private void ChangeSelectedMetal(int direction){
         if (!canChangeMetal || grupoMetal == null) {
-            Debug.LogWarning("Cambio de metal bloqueado temporalmente.");
             return;
         }
 
         int totalMetales = grupoMetal.transform.childCount;
         int newIndex;
 
-        if (inWhatMetalPage[0]) { // Alomancia
+        if (inWhatMetalPage[0]) {
             newIndex = selectedMetalIndexAlo;
-        } else if (inWhatMetalPage[1]) { // Feruquimia
+        } else if (inWhatMetalPage[1]) {
             newIndex = selectedMetalIndexFeru;
-        } else if (inWhatMetalPage[2]) { // Hemalurgia
+        } else if (inWhatMetalPage[2]) {
             newIndex = selectedMetalIndexHema;
         } else {
             return;
@@ -667,28 +661,22 @@ public class PauseManager : MonoBehaviour{
             GameObject metal = grupoMetal.transform.GetChild(i-1).gameObject;
             UnityEngine.UI.Image img = metal.GetComponent<UnityEngine.UI.Image>();
 
-            int slotOcupado = -1;
-            foreach (var kv in inWhatMetalPage[0]? slotMetalAlo : inWhatMetalPage[1]? slotMetalFeru : inWhatMetalPage[2]? slotMetalHema : null) {
-                if (kv.Value == i) {
-                    slotOcupado = kv.Key;
-                    break;
-                }
-            }
+            bool slotOcupado = 
+                inWhatMetalPage[0] ? pd.IsAloMetalEquipped(i) :
+                inWhatMetalPage[1] ? pd.IsFeruMetalEquipped(i) :
+                inWhatMetalPage[2] ? pd.IsHemaMetalEquipped(i) : false;
+
 
             if (img != null){
-                if(i-1 == selectedMetalIndex){
-                    if(slotOcupado > 0){
-                        img.color = Color.red;
-                    }else{
-                        img.color = Color.magenta;
-                    }
-                }else{
-                    if(slotOcupado > 0){
-                        img.color = Color.yellow;
-                    }else{
-                        img.color = Color.white;
-                    }
-                }
+                img.color = (i-1 == selectedMetalIndex) ?
+                    (slotOcupado ?
+                        Color.red :
+                        Color.magenta
+                    ) :
+                    (slotOcupado ?
+                        Color.yellow : 
+                        Color.white
+                    );
             }else{
                 Debug.LogWarning($"El metal {metal.name} no tiene Image asignado.");
             }
