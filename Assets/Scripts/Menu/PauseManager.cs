@@ -298,9 +298,6 @@ public class PauseManager : MonoBehaviour{
 
 
     PlayerScript playerScript;
-    
-    public Dictionary<string,int> cantidadesAlo = new Dictionary<string, int>();
-    public Dictionary<string,int> capacidadesAlo = new Dictionary<string, int>();
 
     public Image[] slotsHemaImages;
     public Sprite[] spritesHema;
@@ -355,9 +352,9 @@ public class PauseManager : MonoBehaviour{
 
         DetectMetalPage();
         isDatos();
-        SetFraseHemalurgia();
+        UpdateHemalurgy();
         UpdateSelection();
-        UpdateObjetos();
+        UpdateObjects();
         UpdateMetales();
     }
 
@@ -384,13 +381,7 @@ public class PauseManager : MonoBehaviour{
         }
     }
 
-    private void SetFraseHemalurgia(){
-        // int numClavos = 0;
-        // foreach(var clavo in slotMetalHema){
-        //     if(clavo.Value >0){
-        //         numClavos++;
-        //     }
-        // }
+    private void UpdateHemalurgy(){
         string text = "";
         switch (pd.GetNailNum()){
             case 0:
@@ -418,6 +409,21 @@ public class PauseManager : MonoBehaviour{
                 break;
         }
         txtEstado.text = text;
+
+        for(int i = 1; i <= pd.GetHemaSlots().Length; i++){
+            HemaMetal hm = pd.GetHemaMetalInSlot(i);
+            if(hm != null){
+                slotsHemaImages[i-1].gameObject.SetActive(true);
+                slotsHemaImages[i-1].sprite = spritesHema[i-1];
+                if(selectedMetalIndexHema+1 == i){
+                    slotsHemaImages[i-1].color = Color.yellow;
+                }else{
+                    slotsHemaImages[i-1].color = Color.white;
+                }
+            }else{
+                slotsHemaImages[i-1].gameObject.SetActive(false);
+            }
+        }
     }
 
     private void DetectMetalPage(){
@@ -484,32 +490,29 @@ public class PauseManager : MonoBehaviour{
         if (context.performed && isPaused && inMetalPage){
             ChangeSelectedMetal(-1);
         }else{
-            ChangeSelectedObjeto(-1,0);
+            ChangeSelectedObject(-1,0);
         }
     }
-
     public void OnMoveRight(InputAction.CallbackContext context){
         DetectMetalPage();
         if (context.performed && isPaused && inMetalPage){
             ChangeSelectedMetal(1);
         }else{
-            ChangeSelectedObjeto(1,0);
+            ChangeSelectedObject(1,0);
         }
     }
-
     public void OnMoveUp(InputAction.CallbackContext context){
         if (context.performed && isPaused){
-            ChangeSelectedObjeto(0,-1);
+            ChangeSelectedObject(0,-1);
         }
     }
-
     public void OnMoveDown(InputAction.CallbackContext context){
         if (context.performed && isPaused){
-            ChangeSelectedObjeto(0,1);
+            ChangeSelectedObject(0,1);
         }
     }
 
-    private void ChangeSelectedObjeto(int deltaX, int deltaY){
+    private void ChangeSelectedObject(int deltaX, int deltaY){
         if (!isPaused) return;
         if (!canChangeObjeto) {
             return;
@@ -546,7 +549,7 @@ public class PauseManager : MonoBehaviour{
         canChangeObjeto = true;
     }
 
-    private void UpdateObjetos(){
+    private void UpdateObjects(){
         List<Objeto> objetosDes = playerScript.objetosDesbloqueados;
         int spriteIndex = 0;
 
@@ -580,7 +583,6 @@ public class PauseManager : MonoBehaviour{
 
     private void Select() {
         if(inMetalPage && selectedMetalIndex >= 0){
-            Debug.Log($"SELECTED INDEX: {selectedMetalIndex}");
             if (inWhatMetalPage[0]) {
                 pd.EquipAloMetal(selectedMetalIndex+1);
             } else if (inWhatMetalPage[1]) {

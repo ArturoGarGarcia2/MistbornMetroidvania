@@ -19,7 +19,6 @@ public class HealthUIScript : MonoBehaviour
 
     // Update is called once per frame
     void Update(){
-        Health = playerScript.actual_lifes;
-        HealthText.text = Health.ToString()+" <3";
+        HealthText.text = playerScript.pd.GetHealth()+" <3";
     }
 }

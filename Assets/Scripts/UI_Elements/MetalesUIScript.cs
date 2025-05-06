@@ -29,10 +29,6 @@ public class MetalesUIScript : MonoBehaviour
     public Text DBText;
 
     PlayerScript playerScript;
-    public Dictionary<string,int> capacidadesAlo = new Dictionary<string, int>();
-    public Dictionary<string,int> cantidadesAlo = new Dictionary<string, int>();
-    public Dictionary<string,int> capacidadesFeru = new Dictionary<string, int>();
-    public Dictionary<string,int> cantidadesFeru = new Dictionary<string, int>();
 
     Dictionary<string, string> coloresMetales = new Dictionary<string, string>(){
         {"Hierro", "#4B4B4B"},
@@ -71,27 +67,12 @@ public class MetalesUIScript : MonoBehaviour
     }
 
     void Update(){
-        capacidadesAlo = playerScript.capacidadesAlo;
-        cantidadesAlo = playerScript.cantidadesAlo;
-        capacidadesFeru = playerScript.capacidadesFeru;
-        cantidadesFeru = playerScript.cantidadesFeru;
-        ActualizarMetales();
+        // ActualizarMetales();
+        ActualizarTexto();
     }
 
-    void ActualizarMetales(){
-        string result = "";
-        result += "<b>Met:  Alo  Feru</b>\n";
-
-        foreach(var metal in cantidadesFeru.Keys){
-            string nombre = metalesChiqui[metal].PadRight(4);
-            string alo = cantidadesAlo[metal].ToString().PadLeft(4);
-            string feru = cantidadesFeru[metal].ToString().PadLeft(4);
-
-            string color = coloresMetales[metal];
-            result += $"<color={color}>{nombre}</color>: {alo} - {feru}\n";
-        }
-
-        MetalesText.text = result;
-        MetalesText.text = $"{(int)locuraManager.time}/{locuraManager.maxTime} \n{playerScript.faseActual}";
+    void ActualizarTexto(){
+        // MetalesText.text = $"{(int)locuraManager.time}/{locuraManager.maxTime} \n{playerScript.faseActual}";
+        // MetalesText.text = $"Peso actual: {playerScript.pd.GetWeight()}";
     }
 }

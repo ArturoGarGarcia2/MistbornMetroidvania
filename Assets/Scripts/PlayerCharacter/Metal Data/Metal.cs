@@ -16,7 +16,7 @@ public enum Metal{
     BENDALLOY,
     GOLD,
     ELECTRUM,
-    CHROMIUN,
+    CHROMIUM,
     NICROSIL,
     ALUMINIUM,
     DURALUMIN,

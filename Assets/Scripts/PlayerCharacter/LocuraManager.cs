@@ -6,16 +6,6 @@ public class LocuraManager : MonoBehaviour{
     
     PlayerScript ps;
 
-    // public Dictionary<string,float[]> fases = new Dictionary<string,float[]>{
-    //     {"silencio", new float[] {90, 90, 90, 90, 90, 90,}},
-    //     {"murmullos", new float[] {5400, 5400, 3240, 2700, 1080, 540}},
-    //     {"ojos", new float[] {4500, 4500, 2700, 2250, 900, 450}},
-    //     {"mundo", new float[] {3600, 3600, 2160, 1800, 720, 360}},
-    //     {"dominio", new float[] {2700, 2700, 1620, 1350, 540, 270}},
-    //     {"extasis", new float[] {90, 90, 90, 90, 90, 90,}},
-    //     {"declive", new float[] {300, 300, 300, 300, 300, 300,}},
-    // };
-
     public float time = 0f;
 
     int silencio = 90;
@@ -26,9 +16,12 @@ public class LocuraManager : MonoBehaviour{
     int extasis = 90+5400+4500+3600+2700+180;
     int declive = 90+5400+4500+3600+2700+180+300;
     public int maxTime = 0;
+    PlayerScript playerScript;
+    PlayerData pd;
 
     
     void Start(){
+        playerScript = FindObjectOfType<PlayerScript>();
         maxTime = declive;
         ps = FindObjectOfType<PlayerScript>();
         if (ps == null) {
@@ -39,12 +32,19 @@ public class LocuraManager : MonoBehaviour{
     }
 
     void Update(){
+        pd = playerScript.pd;
         float mult = 0f;
         if(time < silencio || time > dominio){
-            mult = GetMultiplicadorByNumClavos(ps.GetNumClavos()) == -1f ? -1f : 1f;
+            mult = GetMultiplicadorByNumClavos(pd.GetNailNum()) == -1f ? -1f : 1f;
         }else{
-            mult = GetMultiplicadorByNumClavos(ps.GetNumClavos());
+            mult = GetMultiplicadorByNumClavos(pd.GetNailNum());
         }
+        
+        FeruMetal fm = pd.GetFeruMetalIfEquipped((int)Metal.ALUMINIUM);
+        if(fm != null){
+            mult = fm.IsStoring() ? (mult<0 ? mult*.5f : mult*2f) : fm.IsTapping() ? -2f : mult*1f;
+        }
+
         time += Time.deltaTime * mult;
 
         if(time > 0 && time < silencio){

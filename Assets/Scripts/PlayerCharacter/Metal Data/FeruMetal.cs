@@ -24,6 +24,8 @@ public class FeruMetal{
     public int GetStoringRate() => storingRate;
     public int GetTappingRate() => tappingRate;
     public int GetStatus() => status;
+    public bool IsStoring() => status == 1;
+    public bool IsTapping() => status == -1;
 
     public void SetAmount(int a){this.amount = a;}
     public void SetCapacity(int c){this.capacity = c;}

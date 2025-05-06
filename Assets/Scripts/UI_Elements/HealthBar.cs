@@ -31,11 +31,9 @@ public class HealthBar : MonoBehaviour{
 
     void Update(){
         pd = playerScript.pd;
-        vialesVida = playerScript.vialesVida;
         faseActual = pd.GetPhase();
 
         for (int i = 1; i <= viales.Length; i++){
-            Debug.Log($"viales.Length: {viales.Length}");
             int vials = pd.GetVials();
             int remainingVials = pd.GetRemainingVials();
 
@@ -50,10 +48,10 @@ public class HealthBar : MonoBehaviour{
             }
         }
 
-        maxHealth = (float)DatabaseManager.Instance.GetInt("SELECT max_health FROM file WHERE id = 1;");
-        currentHealth = playerScript.actual_lifes;
+        maxHealth = (float)pd.GetMaxHealth();
+        currentHealth = (float)pd.GetHealth();
 
-        float fillAmount = pd.GetHealth() / pd.GetMaxHealth();
+        float fillAmount = currentHealth / maxHealth;
 
         if (healthFill != null)
             healthFill.fillAmount = fillAmount;

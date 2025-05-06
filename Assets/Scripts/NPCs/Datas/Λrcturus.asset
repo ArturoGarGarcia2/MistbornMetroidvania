@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce7924d304bc00643a717f52f885dc32, type: 3}
-  m_Name: Alendi
+  m_Name: "\u039Brcturus"
   m_EditorClassIdentifier: 
-  npcName: Alendi
-  eventName: Hablado_Alendi
+  npcName: "\u039Brcturus"
+  npcSprite: {fileID: 21300000, guid: 3febaee11b9f1cf4eace7119c9cf4dd5, type: 3}
+  eventName: "Hablado_\u039Brcturus"
   estados:
   - estado: inicio
     frases:

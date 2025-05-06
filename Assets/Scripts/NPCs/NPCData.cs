@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NuevoNPC", menuName = "NPC/NPCData")]
 public class NPCData : ScriptableObject {
     public string npcName;
+    public Sprite npcSprite;
     public string eventName;
     public List<NPCEstado> estados;
 }

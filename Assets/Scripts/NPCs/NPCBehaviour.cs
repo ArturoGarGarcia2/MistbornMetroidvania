@@ -26,7 +26,7 @@ public class NPCBehaviour : MonoBehaviour {
 
         if (playerScript.inNPC && playerScript.nearNPC == this.gameObject && playerScript.nextFrase){
             if (!dialogManager.IsActive()){
-                dialogManager.StartDialog(npc.GetFrases(estadoActual));
+                dialogManager.StartDialog(npc.GetFrases(estadoActual),npcData);
             } else {
                 dialogManager.DisplayNextFrase();
             }
@@ -35,7 +35,7 @@ public class NPCBehaviour : MonoBehaviour {
 
     public void StartDialogue(){
         Debug.Log("Iniciando diálogo del NPC");
-        DialogManager.instance.StartDialog(npcData.estados[0].frases);
+        DialogManager.instance.StartDialog(npcData.estados[0].frases,npcData);
         if(npcData.eventName != null){
             GameEvents.NPCSpoken(npcData.eventName);
         }

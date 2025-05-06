@@ -59,7 +59,7 @@ public class DatabaseManager : MonoBehaviour
 
     private void InitializeDatabase(){
         if (!File.Exists(dbName)){
-            Debug.Log("Base de datos no encontrada, creando nueva...");
+            // Debug.Log("Base de datos no encontrada, creando nueva...");
         }
         PlayerPrefs.DeleteAll();
     }
