@@ -9,10 +9,12 @@ public class DialogManager : MonoBehaviour {
 
     public GameObject dialogPanel;
     public TextMeshProUGUI dialogText;
+    public TextMeshProUGUI npcNameText;
+    public Image npcImage;
 
     private Queue<string> frases;
     private bool isActive = false;
-    public float cooldownEntreFrases = .5f;
+    public float cooldownEntreFrases = .3f;
     public float cooldownEntreDialogos = 3.0f;
     private bool puedeMostrarFrase = true;
     private bool puedeHablar = true;
@@ -39,7 +41,7 @@ public class DialogManager : MonoBehaviour {
 
     }
 
-    public void StartDialog(List<string> frasesList){
+    public void StartDialog(List<string> frasesList, NPCData npcData){
         if(!puedeHablar) return;
 
         frases.Clear();
@@ -47,7 +49,11 @@ public class DialogManager : MonoBehaviour {
             frases.Enqueue(f);
         }
 
+        npcImage.sprite = npcData.npcSprite;
+        npcNameText.text = npcData.npcName;
+
         dialogPanel.SetActive(true);
+        playerScript.HideHUD();
         StartCoroutine(IniciarDialogoConFade());
     }
 
@@ -91,6 +97,7 @@ public class DialogManager : MonoBehaviour {
 
     public void EndDialog(){
         StartCoroutine(CerrarDialogoConFade());
+        playerScript.ShowHUD();
     }
 
     private IEnumerator CerrarDialogoConFade(){
@@ -113,7 +120,6 @@ public class DialogManager : MonoBehaviour {
     }
 
     public void ShowDialog(List<string> frases){
-//        Debug.Log("Mostrando diálogo...");
     }
 
     private IEnumerator FadeCanvasGroup(CanvasGroup cg, float start, float end, float duration){

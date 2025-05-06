@@ -62,7 +62,7 @@ public class FuenteBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(playerInside && player.enterFuente && !encendida){
+        if(playerInside && player.interacting && !encendida){
             Fuente.GetComponent<Animator>().SetBool("Encendiendo",true);
         }
     }

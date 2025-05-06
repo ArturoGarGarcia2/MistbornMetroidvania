@@ -24,9 +24,6 @@ public class BarrasMetalScript : MonoBehaviour{
     }
 
     void Update(){
-        slotMetalAlo = playerScript.slotMetalAlo;
-        cantidadesAlo = playerScript.cantidadesAlo;
-        capacidadesAlo = playerScript.capacidadesAlo;
         pd = playerScript.pd;
         SetBarrasAlo();
     }

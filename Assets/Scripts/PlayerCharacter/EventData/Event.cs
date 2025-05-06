@@ -42,6 +42,8 @@ public class Event{
             $"SELECT * FROM event WHERE name = '{eventName}';"
         );
 
+        if (eventData == null) return;
+
         id = Convert.ToInt32(eventData["id"]);
         string preType = eventData["type"].ToString();
         switch (preType){
@@ -59,10 +61,12 @@ public class Event{
                 break;
         }
         description = eventData["description"].ToString();
+
+        this.ToString();
     }
 
     public override string ToString(){
-        return $"(EVENT) {name}: {description} ({type})";
+        return $"(EVENT {id}) {name}: {description} ({type})";
     }
 
     public int GetId() => id;

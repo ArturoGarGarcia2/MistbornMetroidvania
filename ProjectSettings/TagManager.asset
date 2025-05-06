@@ -10,6 +10,7 @@ TagManager:
   - Instant_Death
   - Fuente
   - NPC
+  - CopperCloud
   layers:
   - Default
   - TransparentFX
