@@ -22,7 +22,6 @@ public class BrumousEnemy : EnemyBase, IBrumous {
     }
 
     void Update() {
-        Debug.Log($"inCopperCloud: {inCopperCloud}");
         TryAttack();
         UseMistAbility();
 
@@ -43,23 +42,14 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         }
     }
 
-    // void OnTriggerEnter2D(Collider2D other){
-    //     if (other.tag == "CopperCloud") {
-    //         Debug.Log($"ENTRANDO EN COPPER CLOUD");
-    //         inCopperCloud = true;
-    //     }
-    // }
-
     void OnTriggerStay2D(Collider2D other){
         if (other.tag == "CopperCloud") {
-            Debug.Log($"DENTRO DE COPPER CLOUD");
             inCopperCloud = true;
         }
     }
 
     void OnTriggerExit2D(Collider2D other){
         if (other.tag == "CopperCloud") {
-            Debug.Log($"SALIENDO DE COPPER CLOUD");
             inCopperCloud = false;
         }
     }

@@ -172,7 +172,6 @@ public class PlayerScript : MonoBehaviour{
     public string faseActual;
     public PlayerData pd;
 
-
     void Start(){
         pd = new PlayerData(1);
         // SetMetales();
@@ -276,22 +275,22 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnFeruUp(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && pd.GetFeruMetalInSlot(1)!=null && !pressingQ){
             pd.ChangeFeruMetalStatus(1);
         }
     }
     public void OnFeruRight(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && pd.GetFeruMetalInSlot(2)!=null && !pressingQ){
             pd.ChangeFeruMetalStatus(2);
         }
     }
     public void OnFeruDown(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && pd.GetFeruMetalInSlot(3)!=null && !pressingQ){
             pd.ChangeFeruMetalStatus(3);
         }
     }
     public void OnFeruLeft(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && pd.GetFeruMetalInSlot(4)!=null && !pressingQ){
             pd.ChangeFeruMetalStatus(4);
         }
     }
@@ -338,6 +337,7 @@ public class PlayerScript : MonoBehaviour{
                 playerAnimator.SetFloat("Velocity", rb.velocity.y);
 
                 if(!dead){
+                    rb.mass = pd.GetWeight();
                     Fuente();
                     Move();
                     Jump();
@@ -403,6 +403,7 @@ public class PlayerScript : MonoBehaviour{
 
     void Update(){
         SetMetalWheel();
+        SetObjective();
     }
 
     private void SetMetalWheel(){
@@ -519,13 +520,17 @@ public class PlayerScript : MonoBehaviour{
 
     public void OnMove(InputAction.CallbackContext context){
         if(selectingMetal){
-            movementInput.x = 0;
-            movementInput.y = 0;
+            // movementInput.x = 0;
+            // movementInput.y = 0;
+            return;
+        }
+        if(pressingQ){
             return;
         }
         movementInput = context.ReadValue<Vector2>();
     }
     void Move(){
+        if(pressingQ)return;
         // float multiplierAcero = !HasClavo("Acero") ? 1f : (HasClavo("Electro") ? 1.5f : 1.2f);
         rb.velocity = new Vector2(short_term_thrust*2 + movementInput.x * pd.GetSpeed() * /*multiplierAcero*/1, rb.velocity.y);
 
@@ -594,7 +599,7 @@ public class PlayerScript : MonoBehaviour{
     public void OnDash(InputAction.CallbackContext context){
         // int peltre = PlayerPrefs.GetInt("Peltre");
         // Debug.Log("Peltre: "+peltre);
-        if (context.performed && canDash){
+        if (context.performed && canDash && !pressingQ){
             // PlayerPrefs.SetInt("Peltre",peltre-3);
             StartDash();
         }
@@ -715,11 +720,9 @@ public class PlayerScript : MonoBehaviour{
 
     void RestarVida(int damage){
         actual_lifes -= damage;
-        // short_term_thrust = HasClavo("Hierro") ? 0f : facingRight ? -hurt_thrust : hurt_thrust;
         sr.color = Color.red;
     }
 
-    // Corrutina para gestionar el tiempo de invulnerabilidad
     IEnumerator Invulnerability() {
         isInvulnerable = true;
         sr.color = new Color(1, 0, 0, 0.5f);
@@ -832,5 +835,163 @@ public class PlayerScript : MonoBehaviour{
         string nombreEvento = $"{eventName}";
 
         pd.AddEvent(eventName);
+    }
+
+    
+    bool pressingQ = false;
+    public List<GameObject> nearMetalObjects;
+    public List<GameObject> nearEmotionObjects;
+    int selectedMetalObjective = 0;
+    int selectedEmotionObjective = 0;
+    bool canSelectObjective = true;
+
+    public void OnQPressed(InputAction.CallbackContext context){
+        if (context.started && !pauseManager.isPaused){
+            pressingQ = true;
+        }
+
+        if (context.canceled){
+            pressingQ = false;
+        }
+    }
+
+    public void OnQRight(InputAction.CallbackContext context){
+        if(pressingQ && nearMetalObjects.Count > 0 && canSelectObjective){
+
+            selectedMetalObjective++;
+            selectedEmotionObjective++;
+
+            if(selectedMetalObjective > nearMetalObjects.Count-1){
+                selectedMetalObjective = 0;
+            }
+            if(selectedEmotionObjective > nearEmotionObjects.Count-1){
+                selectedEmotionObjective = 0;
+            }
+
+            canSelectObjective = false;
+            StartCoroutine(ObjectiveCooldown());
+        }
+    }
+    public void OnQLeft(InputAction.CallbackContext context){
+        if(pressingQ && nearMetalObjects.Count > 0 && canSelectObjective){
+
+            selectedMetalObjective--;
+            selectedEmotionObjective--;
+
+            if(selectedMetalObjective < 0){
+                selectedMetalObjective = nearMetalObjects.Count-1;
+            }
+            if(selectedEmotionObjective < 0){
+                selectedEmotionObjective = nearEmotionObjects.Count-1;
+            }
+
+            canSelectObjective = false;
+            StartCoroutine(ObjectiveCooldown());
+        }
+    }
+
+    IEnumerator ObjectiveCooldown(){
+        if(!canSelectObjective){
+            yield return new WaitForSeconds(.2f);
+            canSelectObjective = true;
+        }
+    }
+
+    void SetObjective(){
+        if(!pressingQ) return;
+        if(selectedMetalObjective > nearMetalObjects.Count-1){
+            selectedMetalObjective = nearMetalObjects.Count-1;
+        }
+
+        int pos = 0;
+        foreach(GameObject gm in nearMetalObjects){
+            MetalObject mo = gm.GetComponent<MetalObject>();
+            
+            if(pos == selectedMetalObjective){
+                mo.selected = true;
+            }else{
+                mo.selected = false;
+            }
+            pos++;
+        }
+    }
+
+    Coroutine pushRoutine = null;
+    Coroutine pullRoutine = null;
+
+    public void OnPushingMetal(InputAction.CallbackContext context){
+        AloMetal amSte = pd.GetAloMetalIfEquipped((int)Metal.STEEL);
+        if (!pressingQ || nearMetalObjects.Count == 0 || amSte == null || !amSte.IsBurning()) return;
+
+        if (context.started && nearMetalObjects.Count > 0){
+            pushRoutine = StartCoroutine(ApplyForceContinuously(-1));
+        }
+        else if (context.canceled && pushRoutine != null){
+            StopCoroutine(pushRoutine);
+            pushRoutine = null;
+        }
+    }
+
+    public void OnPullingMetal(InputAction.CallbackContext context){
+        AloMetal amIro = pd.GetAloMetalIfEquipped((int)Metal.IRON);
+        if (!pressingQ || nearMetalObjects.Count == 0 || amIro == null || !amIro.IsBurning()) return;
+
+        if (context.started && nearMetalObjects.Count > 0){
+            pullRoutine = StartCoroutine(ApplyForceContinuously(1));
+        }
+        else if (context.canceled && pullRoutine != null){
+            StopCoroutine(pullRoutine);
+            pullRoutine = null;
+        }
+    }
+
+    IEnumerator ApplyForceContinuously(int directionMultiplier){
+        while (pressingQ){
+            if (nearMetalObjects.Count == 0) yield break; // Si no hay objetos cercanos, salir inmediatamente.
+
+            // Asegurar que el índice no esté fuera de rango.
+            if (selectedMetalObjective < 0 || selectedMetalObjective >= nearMetalObjects.Count){
+                selectedMetalObjective = Mathf.Clamp(selectedMetalObjective, 0, nearMetalObjects.Count - 1);
+            }
+
+            Debug.Log($"nearMetalObjects.Count: {nearMetalObjects.Count}, selectedMetalObjective: {selectedMetalObjective}");
+
+            GameObject target = nearMetalObjects[selectedMetalObjective];
+            if (target == null) yield break; // Si el objetivo es nulo, salimos.
+
+            // Calcular dirección
+            Vector2 direction = ((Vector2)target.transform.position - rb.position).normalized;
+
+            float thrust = directionMultiplier * 1f;
+            AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+            if (amDur != null && amDur.IsBurning()){
+                thrust *= 3f; // Aumentamos la fuerza si Duraluminio está siendo quemado.
+            }
+
+            Vector2 force = direction * thrust;
+
+            // Aplicar fuerza al jugador
+            rb.AddForce(force, ForceMode2D.Impulse);
+
+            // Aplicar fuerza opuesta al objeto si tiene Rigidbody2D
+            Rigidbody2D targetRb = target.GetComponent<Rigidbody2D>();
+            if (targetRb != null && !targetRb.isKinematic){
+                targetRb.AddForce(-force, ForceMode2D.Impulse);
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
+
+    public void OnPushingEmotion(InputAction.CallbackContext context){
+        if(pressingQ && context.started){
+            // Debug.Log("Pulsando: PUSHING EMOTION");
+        }
+    }
+    public void OnPullingEmotion(InputAction.CallbackContext context){
+        if(pressingQ && context.started){
+            // Debug.Log("Pulsando: PULLING EMOTION");
+        }
     }
 }

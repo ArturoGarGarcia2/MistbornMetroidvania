@@ -85,7 +85,7 @@ public class DatabaseManager : MonoBehaviour
     }
 
     public void ExecuteNonQuery(string query, params object[] parameters){
-        // Debug.Log($"query: {query}");
+        // Debug.Log($"ExecuteNonQuery query: {query}");
         using (IDbConnection dbConnection = new SqliteConnection(dbName))
         {
             dbConnection.Open();
@@ -100,7 +100,7 @@ public class DatabaseManager : MonoBehaviour
     }
 
     public object ExecuteScalar(string query, params object[] parameters){
-        // Debug.Log($"query: {query}");
+        // Debug.Log($"ExecuteScalar query: {query}");
         using (IDbConnection dbConnection = new SqliteConnection(dbName))
         {
             dbConnection.Open();
@@ -109,7 +109,7 @@ public class DatabaseManager : MonoBehaviour
                 command.CommandText = query;
                 AddParameters(command, parameters);
                 object result = command.ExecuteScalar();
-                // Debug.Log("RESULT: " + result);
+                // Debug.Log($"ExecuteScalar result: {result}");
                 dbConnection.Close();
                 return result;
             }

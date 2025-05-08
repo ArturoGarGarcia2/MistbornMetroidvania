@@ -16,7 +16,6 @@ public class BrumousEnemyAI : MonoBehaviour {
         enemy = GetComponent<BrumousEnemy>();
         initialPos = transform.position;
 
-        // Autoasignar jugador si no se asigna desde el Inspector
         if (player == null){
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null){
@@ -41,7 +40,6 @@ public class BrumousEnemyAI : MonoBehaviour {
         float patrolSpeed = enemy.moveSpeed * 0.5f;
         Vector2 newPos = transform.position;
 
-        // Mover hacia la derecha o izquierda
         if (movingRight){
             newPos += Vector2.right * patrolSpeed * Time.deltaTime;
             if (newPos.x > initialPos.x + wanderRange){
