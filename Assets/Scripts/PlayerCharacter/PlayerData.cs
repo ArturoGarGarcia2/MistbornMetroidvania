@@ -13,6 +13,7 @@ public class PlayerData{
     int damage;
     int vials;
     int usedVials;
+    int baseVialPower;
     int vialPower;
     string phase;
     int phaseTime;
@@ -51,6 +52,13 @@ public class PlayerData{
             $"SELECT * FROM file WHERE id = {fileId};"
         );
 
+        if (fileData == null || fileData.Count == 0) {
+            Debug.LogError($"No se encontraron datos para el fileId: {fileId}");
+            return;
+        }else{
+            Debug.Log($"fileData relleno: {fileData}");
+        }
+
         baseMaxHealth = Convert.ToInt32(fileData["max_health"]);
         maxHealth = baseMaxHealth;
         health = baseMaxHealth;
@@ -58,7 +66,7 @@ public class PlayerData{
         baseDamage = Convert.ToInt32(fileData["damage"]);
         damage = baseDamage;
 
-        baseWeight = 70f;
+        baseWeight = 1f;
         weight = baseWeight;
 
         baseSpeed = 5f;
@@ -67,6 +75,7 @@ public class PlayerData{
         checkpoint = Convert.ToInt32(fileData["checkpoint_id"]);
         vials = Convert.ToInt32(fileData["vials"]);
         usedVials = 0;
+        baseVialPower = Convert.ToInt32(fileData["vial_power"]);
         vialPower = Convert.ToInt32(fileData["vial_power"]);
         phase = fileData["phase"].ToString();
         phaseTime = Convert.ToInt32(fileData["phase_time"]);
@@ -84,6 +93,7 @@ public class PlayerData{
 
         // Debug.Log($"DATA: {this.ToString()}");
         // DebugMetals();
+        Debug.Log($"Daticos: {this}");
     }
 
     private void SetMetals(){
@@ -190,6 +200,7 @@ public class PlayerData{
     
     public void ExecuteFeruAndHemaUpdates(){
         damage = baseDamage;
+        vialPower = baseVialPower;
         // weight = baseWeight;
         speed = baseSpeed;
         ITime = baseITime;
@@ -207,7 +218,7 @@ public class PlayerData{
 
         switch(fm.GetMetal()){
             case Metal.IRON:
-                weight = (GetFeruMetalIfEquipped((int)Metal.IRON).IsStoring() ? baseWeight*2f : GetFeruMetalIfEquipped((int)Metal.IRON).IsTapping() ? baseWeight*.5f : baseWeight*1f);
+                weight = (GetFeruMetalIfEquipped((int)Metal.IRON).IsStoring() ? baseWeight*.5f : GetFeruMetalIfEquipped((int)Metal.IRON).IsTapping() ? baseWeight*2f : baseWeight*1f);
                 break;
 
             case Metal.STEEL:
@@ -305,7 +316,7 @@ public class PlayerData{
                 break;
 
             case Metal.STEEL:
-                speed *= (IsHemaMetalEquipped((int)Metal.STEEL) ? IsHemaMetalEquipped((int)Metal.ELECTRUM) ? 2f : 1.5f : 1f);
+                speed *= (IsHemaMetalEquipped((int)Metal.STEEL) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 2f : 1.5f : 1f);
                 break;
 
             case Metal.TIN:
@@ -313,11 +324,11 @@ public class PlayerData{
                 break;
 
             case Metal.PEWTER:
-                damage += (IsHemaMetalEquipped((int)Metal.STEEL) ? IsHemaMetalEquipped((int)Metal.ELECTRUM) ? baseDamage/2 : baseDamage/4 : 0);
+                damage += (IsHemaMetalEquipped((int)Metal.STEEL) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? baseDamage/2 : baseDamage/4 : 0);
                 break;
 
             case Metal.ZINC:
-                ITime *= (IsHemaMetalEquipped((int)Metal.ZINC) ? IsHemaMetalEquipped((int)Metal.ELECTRUM) ? 2f : 1.5f : 1f);
+                ITime *= (IsHemaMetalEquipped((int)Metal.ZINC) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 2f : 1.5f : 1f);
                 break;
 
             case Metal.BRASS:
@@ -337,7 +348,7 @@ public class PlayerData{
                 break;
 
             case Metal.BENDALLOY:
-                Debug.Log("HEMALURGIC BENDALLOY WIP");
+                vialPower += (IsHemaMetalEquipped((int)Metal.BENDALLOY) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? baseVialPower/2 : baseVialPower/4 : 0);
                 break;
 
             case Metal.GOLD:
