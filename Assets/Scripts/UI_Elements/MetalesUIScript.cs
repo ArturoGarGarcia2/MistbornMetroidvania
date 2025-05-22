@@ -21,7 +21,7 @@ public class MetalesUIScript : MonoBehaviour
         {"Cromo","Cr"},
         {"Nicrosil","Cr+"},
         {"Aluminio","Al"},
-        {"Duraluminio","Al+"},
+        {"Duralumín","Al+"},
         {"Atium","At"},
     };
 
@@ -46,7 +46,7 @@ public class MetalesUIScript : MonoBehaviour
         {"Cromo", "#C0C0C0"},
         {"Nicrosil", "#D3D3D3"},
         {"Aluminio", "#ADD8E6"},
-        {"Duraluminio", "#4682B4"},
+        {"Duralumín", "#4682B4"},
         {"Atium", "#5EF2DC"},
     };
     
@@ -72,7 +72,7 @@ public class MetalesUIScript : MonoBehaviour
     }
 
     void ActualizarTexto(){
-        // MetalesText.text = $"{(int)locuraManager.time}/{locuraManager.maxTime} \n{playerScript.faseActual}";
+        MetalesText.text = $"{(int)locuraManager.time}/{locuraManager.maxTime} \n{playerScript.pd.GetPhase()}";
         // MetalesText.text = $"Peso actual: {playerScript.pd.GetWeight()}";
     }
 }

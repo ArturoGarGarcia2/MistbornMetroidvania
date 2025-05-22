@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CoinsUiScript : MonoBehaviour
-{
-    int Coins;
+public class CoinsUiScript : MonoBehaviour{
     public Text CoinsText;
+    
+    PlayerScript playerScript;
+    PlayerData pd;
 
     // Start is called before the first frame update
-    void Start()
-    {
-        
+    void Start(){
+        playerScript = FindObjectOfType<PlayerScript>();
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        Coins = PlayerPrefs.GetInt("Coins");
-        CoinsText.text = Coins.ToString()+" C";
+    void Update(){
+        pd = playerScript.pd;
+        CoinsText.text = pd.GetCoins()+" €";
     }
 }

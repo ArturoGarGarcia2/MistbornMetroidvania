@@ -25,7 +25,7 @@ public class DatabaseManager : MonoBehaviour
         "Cromo",
         "Nicrosil",
         "Aluminio",
-        "Duraluminio",
+        "Duralumín",
         "Atium",
     };
 

@@ -28,7 +28,12 @@ public class LocuraManager : MonoBehaviour{
             Debug.LogError("No se encontró el ps en la escena.");
             return;
         }
-        time = DatabaseManager.Instance.GetInt("SELECT phase_time FROM file WHERE id = 1;");
+        time = ps.pd.GetPhaseTime();
+    }
+
+    public void ConsumeLaudano(){
+        time -= 100;
+        if(time < 0) time = 0;
     }
 
     void Update(){
@@ -48,20 +53,29 @@ public class LocuraManager : MonoBehaviour{
         time += Time.deltaTime * mult;
 
         if(time > 0 && time < silencio){
-            ps.faseActual = "silencio";
+            // ps.faseActual = "silencio";
+            ps.pd.SetPhase("silencio");
         }else if(time > silencio && time < murmullos){
-            ps.faseActual = "murmullos";
+            // ps.faseActual = "murmullos";
+            ps.pd.SetPhase("murmullos");
         }else if(time > murmullos && time < ojos){
-            ps.faseActual = "ojos";
+            // ps.faseActual = "ojos";
+            ps.pd.SetPhase("ojos");
         }else if(time > ojos && time < mundo){
-            ps.faseActual = "mundo";
+            // ps.faseActual = "mundo";
+            ps.pd.SetPhase("mundo");
         }else if(time > mundo && time < dominio){
-            ps.faseActual = "dominio";
+            // ps.faseActual = "dominio";
+            ps.pd.SetPhase("dominio");
         }else if(time > dominio && time < extasis){
-            ps.faseActual = "extasis";
+            // ps.faseActual = "extasis";
+            ps.pd.SetPhase("extasis");
         }else if(time > extasis && time < declive){
-            ps.faseActual = "declive";
+            // ps.faseActual = "declive";
+            ps.pd.SetPhase("declive");
         }
+
+        ps.pd.SetPhaseTime((int)time);
 
         if(time <= 0){
             time = 0;
@@ -79,24 +93,5 @@ public class LocuraManager : MonoBehaviour{
                 numClavos == 4 ? 2f :
                 numClavos == 5|| numClavos == 6 ? 5f :
                 10f;
-    }
-}
-
-[System.Serializable]
-public struct FaseLocura {
-    public string nombre;
-    public float[] duraciones;
-
-    public FaseLocura(string nombre, float[] duraciones){
-        this.nombre = nombre;
-        this.duraciones = duraciones;
-    }
-
-    public float[] GetDuraciones(){
-        return duraciones;
-    }
-
-    public float GetDuracion(int fase){
-        return duraciones[fase];
     }
 }

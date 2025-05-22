@@ -31,6 +31,16 @@ public class AloMetal{
         burning = !burning;
     }
 
+    public void Recharge(int rechargeAmount){
+        Debug.Log($"RECARGANDO EN ALOMETAL {amount}");
+        amount += rechargeAmount;
+        Debug.Log($"RECARGADO {amount}");
+        if(amount > 1000){
+            Debug.Log($"NOS HEMOS PASAO");
+            amount = 1000;
+        }
+    }
+
     public void Burn(){
         if(!burning)return;
         if(amount>0){
@@ -53,7 +63,7 @@ public class AloMetal{
 
     public void AluminiumBurn(){
         if(amount>0){
-            amount-=50;
+            amount-=100;
         }else{
             amount=0;
             burning=false;
