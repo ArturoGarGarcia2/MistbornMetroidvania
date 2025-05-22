@@ -11,6 +11,11 @@ TagManager:
   - Fuente
   - NPC
   - CopperCloud
+  - ToxicMist
+  - Fire
+  - CadmiumBubble
+  - BendalloyBubble
+  - GoldEcho
   layers:
   - Default
   - TransparentFX

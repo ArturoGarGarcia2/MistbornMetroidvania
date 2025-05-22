@@ -10,6 +10,8 @@ public class NPCBehaviour : MonoBehaviour {
     DialogManager dialogManager;
     public string estadoActual = "inicio";
 
+    public bool requireGold = false;
+
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
         dialogManager = FindObjectOfType<DialogManager>();
@@ -23,10 +25,14 @@ public class NPCBehaviour : MonoBehaviour {
 
     void Update(){
         if (playerScript == null || dialogManager == null) return;
+        AloMetal amGol = playerScript.pd.GetAloMetalIfEquipped((int)Metal.GOLD);
+        if(requireGold && amGol != null && !amGol.IsBurning()){
+            return;
+        }
 
         if (playerScript.inNPC && playerScript.nearNPC == this.gameObject && playerScript.nextFrase){
             if (!dialogManager.IsActive()){
-                dialogManager.StartDialog(npc.GetFrases(estadoActual),npcData);
+                dialogManager.StartDialog(npc.GetFrases(estadoActual),npcData,requireGold);
             } else {
                 dialogManager.DisplayNextFrase();
             }
@@ -34,8 +40,11 @@ public class NPCBehaviour : MonoBehaviour {
     }
 
     public void StartDialogue(){
-        Debug.Log("Iniciando diálogo del NPC");
-        DialogManager.instance.StartDialog(npcData.estados[0].frases,npcData);
+        AloMetal amGol = playerScript.pd.GetAloMetalIfEquipped((int)Metal.GOLD);
+        if(requireGold && amGol != null && !amGol.IsBurning()){
+            return;
+        }
+        DialogManager.instance.StartDialog(npcData.estados[0].frases,npcData,requireGold);
         if(npcData.eventName != null){
             GameEvents.NPCSpoken(npcData.eventName);
         }

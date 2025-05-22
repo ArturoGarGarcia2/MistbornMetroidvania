@@ -7,6 +7,7 @@ public class BrumousEnemy : EnemyBase, IBrumous {
     int damage;
 
     PlayerScript playerScript;
+    ParryManager parryManager;
     public GameObject alomanticPulse;
     BroncePulseManager bpm;
     bool inCopperCloud = false;
@@ -15,15 +16,25 @@ public class BrumousEnemy : EnemyBase, IBrumous {
     protected override void Start() {
         base.Start();
         playerScript = FindObjectOfType<PlayerScript>();
-        // alomanticPulse.gameObject.SetActive(false);
+
         bpm = alomanticPulse.GetComponent<BroncePulseManager>();
         bpm.startingMetals = currentMetals;
         copperCloud.gameObject.SetActive(false);
     }
+    protected override void Update(){ 
+        base.Update();
+    }
 
-    void Update() {
+    void FixedUpdate() {
+        if(dead){
+            gameObject.SetActive(false);
+            return;
+        }
+        parryManager = FindObjectOfType<ParryManager>();
+
         TryAttack();
         UseMistAbility();
+        Hurted();
 
         PlayerData pd = playerScript.pd;
         AloMetal playerBronze = pd.GetAloMetalIfEquipped((int)Metal.BRONZE);
@@ -42,9 +53,23 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         }
     }
 
+    void Hurted(){
+        if(hurted && !invulnerable){
+            invulnerable = true;
+            health -= playerScript.pd.GetDamage();
+            if(health <= 0){
+                dead = true;
+                pd.AddCoins(7);
+            }
+        }
+    }
+
     void OnTriggerStay2D(Collider2D other){
         if (other.tag == "CopperCloud") {
             inCopperCloud = true;
+        }
+        if (other.tag == "Player_Attack") {
+            hurted = true;
         }
     }
 
@@ -52,10 +77,37 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         if (other.tag == "CopperCloud") {
             inCopperCloud = false;
         }
+        if (other.tag == "Player_Attack") {
+            invulnerable = false;
+        }
     }
 
+    protected override void OnAttackStart() {
+        StartCoroutine(AttackWithDelay());
+    }
+
+    private IEnumerator AttackWithDelay() {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) {
+            sr.color = Color.yellow;
+        }
+
+        yield return new WaitForSeconds(attackDelay);
+
+        if (player != null && !dead && Vector2.Distance(player.position, transform.position) <= attackRange) {
+            Attack();
+        }
+
+        if (sr != null) {
+            sr.color = Color.white;
+        }
+    }
+
+
     protected override void Attack() {
-        playerScript.pd.Hurt(damage);
+        if(!parryManager.canParry){
+            playerScript.pd.Hurt(damage);
+        }
     }
 
     public void UseMistAbility() {

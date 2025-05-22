@@ -8,8 +8,16 @@ using Mono.Data.Sqlite;
 using System.IO;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Rendering.Universal;
 
 public class PlayerScript : MonoBehaviour{
+    public GameObject playerLight;
+    public GameObject[] bigMists;
+    public GameObject smallMist;
+
+    public bool inDoors;
+    public bool outDoors;
+
     int coins;
 
     [Header("Movimiento")]
@@ -45,7 +53,6 @@ public class PlayerScript : MonoBehaviour{
     float dashTimeRemaining;
 
     [Header("Vida")]
-    [SerializeField] int lifes = 50;
     public int actual_lifes = 1;
     float targetTime;
     bool dead = false;
@@ -78,6 +85,15 @@ public class PlayerScript : MonoBehaviour{
     public Image[] slotsMetalWheelMenu;
     public Sprite[] spritesMetales;
 
+
+    public GameObject cvConsumibleWheel;
+    private bool selectingConsumible = false;
+    int selectedConsumibleSlot = 0;
+
+    public Image[] slotsConsumibleWheel;
+    public Image[] slotsConsumibleWheelMenu;
+    public TextMeshProUGUI txtConsumibleRueda;
+
     private Vector2 selectionMetal = Vector2.zero;
 
     public GameObject musicObject;
@@ -99,7 +115,7 @@ public class PlayerScript : MonoBehaviour{
         "Cromo",
         "Nicrosil",
         "Aluminio",
-        "Duraluminio",
+        "Duralumín",
         "Atium",
     };
     private string[] descripcionMetalAlo = new string[] {
@@ -148,7 +164,7 @@ public class PlayerScript : MonoBehaviour{
         // Aluminio
         "Hace perder al brumoso sus propias reservas alománticas.\nAl quemarlo, todas las reservas se perderán rápidamente.",
 
-        // Duraluminio
+        // Duralumín
         "Hace perder al brumoso sus propias reservas alománticas de los metales que esté quemando en un estallido de poder.\nEste metal puede ser muy poderoso, pero peligroso dependiendo del metal que se queme.",
 
         // Atium
@@ -162,37 +178,38 @@ public class PlayerScript : MonoBehaviour{
     
     public List<Objeto> objetosDesbloqueados;
 
+    LocuraManager locuraManager;
     PauseManager pauseManager;
+    ParryManager parryManager;
+    CadmiumBendalloyManager CyBManager;
+    UnlockingManager unlockingManager;
 
     public bool nearAnyNPC = false;
     public GameObject nearNPC = null;
     public bool inNPC = false;
     public bool nextFrase = false;
 
-    public string faseActual;
     public PlayerData pd;
 
     void Start(){
         pd = new PlayerData(1);
-        // SetMetales();
-        // SetDictionaries();
 
         cvMetalWheel.SetActive(false);
-        PlayerPrefs.SetInt("Coins", 0);
+        cvConsumibleWheel.SetActive(false);
+
         rb = GetComponent<Rigidbody2D>();
         playerAnimator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
-        
-        lifes = DatabaseManager.Instance.GetInt("SELECT max_health FROM file WHERE id = 1;");
-        actual_lifes = lifes;
 
-        //LoadFromDatabase();
+        locuraManager = FindObjectOfType<LocuraManager>();
+        pauseManager = FindObjectOfType<PauseManager>();
+        parryManager = FindObjectOfType<ParryManager>();
+        CyBManager = FindObjectOfType<CadmiumBendalloyManager>();
+        unlockingManager = FindObjectOfType<UnlockingManager>();
 
         transform.position = GetPuntoControlDesdeDB();
-        pauseManager = FindObjectOfType<PauseManager>();
         StartCoroutine(UpdateAmountEveryHalfSecond());
-
-        faseActual = DatabaseManager.Instance.GetString("SELECT phase FROM file WHERE id = 1;");
+        StartCoroutine(UpdateAloMetals());
     }
 
 
@@ -216,62 +233,6 @@ public class PlayerScript : MonoBehaviour{
         }
 
         return posicion;
-    }
-
-    int ObtenerVelocidadQuemado(string metal) {
-        switch (metal) {
-            case "Oro": return 1;
-            case "Aluminio": return 2;
-            case "Atium": return 1;
-            
-            default: return 3;
-        }
-    }
-
-    int ObtenerVelocidadGuardado(string metal) {
-        switch (metal) {
-            case "Hierro": return 3;
-            case "Acero": return 3;
-            case "Estaño": return 2;
-            case "Peltre": return 1;
-            case "Zinc": return 3;
-            case "Latón": return 3;
-            case "Cobre": return 2;
-            case "Bronce": return 2;
-            case "Cadmio": return 1;
-            case "Bendaleo": return 4;
-            case "Oro": return 1;
-            case "Electro": return 1;
-            case "Cromo": return 2;
-            case "Nicrosil": return 2;
-            case "Aluminio": return 2;
-            case "Duraluminio": return 2;
-            case "Atium": return 1;
-            default: return 0;
-        }
-    }
-
-    int ObtenerVelocidadDecantado(string metal) {
-        switch (metal) {
-            case "Hierro": return 2;
-            case "Acero": return 3;
-            case "Estaño": return 1;
-            case "Peltre": return 5;
-            case "Zinc": return 2;
-            case "Latón": return 2;
-            case "Cobre": return 1;
-            case "Bronce": return 1;
-            case "Cadmio": return 1;
-            case "Bendaleo": return 4;
-            case "Oro": return 6;
-            case "Electro": return 3;
-            case "Cromo": return 4;
-            case "Nicrosil": return 4;
-            case "Aluminio": return 4;
-            case "Duraluminio": return 6;
-            case "Atium": return 6;
-            default: return 1;
-        }
     }
 
     public void OnFeruUp(InputAction.CallbackContext context){
@@ -302,30 +263,105 @@ public class PlayerScript : MonoBehaviour{
             }
             for (int i = 1; i <= pd.GetAloSlots().Length; i++) {
                 AloMetal amAlu = pd.GetAloMetalIfEquipped((int)Metal.ALUMINIUM);
-                AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
                 if(amAlu != null && amAlu.IsBurning()){
                     foreach(AloMetal am in pd.GetAloMetals()){
                         if(am.GetMetal() != Metal.ALUMINIUM){
                             am.AluminiumBurn();
                         }else{
-                            pd.GetAloMetalInSlot(i)?.Burn(50);
+                            pd.GetAloMetalInSlot(i)?.Burn(100);
                         }
-                    }
-                }else{
-                    if (amDur != null && amDur.IsBurning()){
-                        pd.GetAloMetalInSlot(i)?.Burn(50);
-                    }else{
-                        pd.GetAloMetalInSlot(i)?.Burn();
                     }
                 }
             }
             yield return new WaitForSeconds(0.5f);
         }
     }
+    IEnumerator UpdateAloMetals() {
+        while (true) {
+            AloMetal amAlu = pd.GetAloMetalIfEquipped((int)Metal.ALUMINIUM);
+            AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+            for (int i = 1; i <= pd.GetAloSlots().Length; i++) {
+                if(amAlu != null && amAlu.IsBurning()){
+                    foreach(AloMetal am in pd.GetAloMetals()){
+                        if(am.GetMetal() != Metal.ALUMINIUM){
+                            am.AluminiumBurn();
+                        }else{
+                            pd.GetAloMetalInSlot(i)?.Burn(100);
+                        }
+                    }
+                }else{
+                    if (amDur != null && amDur.IsBurning()){
+                        pd.GetAloMetalInSlot(i)?.Burn(30);
+                    }else{
+                        pd.GetAloMetalInSlot(i)?.Burn();
+                    }
+                }
+            }
+            FeruMetal fmNic = pd.GetFeruMetalIfEquipped((int)Metal.NICROSIL);
+            HemaMetal hmNic = pd.GetHemaMetalIfEquipped((int)Metal.NICROSIL);
+            HemaMetal hmDur = pd.GetHemaMetalIfEquipped((int)Metal.DURALUMIN);
+            float multNic = 1f;
+
+            if(fmNic != null){
+                multNic = fmNic.IsStoring() ? .5f : fmNic.IsTapping() ? 1.5f : 1f;
+            }
+            if(hmNic != null && hmDur != null){
+                multNic *= 1.4f;
+            }else if(hmNic != null){
+                multNic *= 1.2f;
+            }
+            float waitTime = ((amDur != null && amDur.IsBurning()) ? .2f : 1f) * multNic;
+            yield return new WaitForSeconds(waitTime);
+        }
+    }
+
+    void TurnOffUnusedAloMetal(){
+        foreach(AloMetal am in pd.GetAloMetals()){
+            if(pd.GetAloMetalIfEquipped((int)am.GetMetal()) == null){
+                am.SetBurning(false);
+            }
+        }
+    }
 
     private Coroutine hemaGoldCoroutine;
 
+    void SetActiveMists(float opacity){
+        foreach(GameObject bigMist in bigMists){
+            // bigMist.gameObject.SetActive(state);
+            bigMist.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f, inDoors ? 0f : outDoors ? opacity/2 : opacity);
+        }
+    }
+
     void FixedUpdate(){
+        playerLight.transform.position = transform.position;
+        Light2D pl = playerLight.GetComponent<Light2D>();
+        // pl.pointLightOuterRadius = 14;
+        // pl.pointLightInnerRadius = 4;
+        FeruMetal fmTin = pd.GetFeruMetalIfEquipped((int)Metal.TIN);
+        AloMetal amTin = pd.GetAloMetalIfEquipped((int)Metal.TIN);
+        if(amTin != null && amTin.IsBurning()){
+            if(fmTin != null && fmTin.IsStoring()){
+                // QUEMANDO Y GUARDANDO
+                SetActiveMists(.8f);
+
+            }else if(fmTin != null && fmTin.IsTapping()){
+                // QUEMANDO Y DECANTANDO
+                SetActiveMists(.3f);
+
+            }else{
+                // QUEMANDO
+                SetActiveMists(.4f);
+            }
+        }else{
+            if(fmTin != null && fmTin.IsStoring()){
+                SetActiveMists(1f);
+            }else if(fmTin != null && fmTin.IsTapping()){
+                SetActiveMists(.6f);
+            }else{
+                SetActiveMists(.8f);
+            }
+        }
+
         if(short_term_thrust != 0){short_term_thrust *= 0.8f;}
         int map_active = PlayerPrefs.GetInt("map_active");
 
@@ -338,10 +374,16 @@ public class PlayerScript : MonoBehaviour{
 
                 if(!dead){
                     rb.mass = pd.GetWeight();
-                    Fuente();
-                    Move();
-                    Jump();
-                    Attack1();
+                    if(!unlockingManager.showingPanel){
+                        Fuente();
+                        Move();
+                        Jump();
+                        Attack1();
+                    }
+
+                    ChokeByToxicMist();
+                    BurnWithFire();
+
                     pd.ExecuteFeruAndHemaUpdates();
                     if(pd.IsHemaMetalEquipped((int)Metal.GOLD)){
                         if(hemaGoldCoroutine == null){
@@ -361,6 +403,18 @@ public class PlayerScript : MonoBehaviour{
 
                 if(pd.IsInvulnerable()){
                     sr.color = Color.red;
+                }else if(parryManager.canParry){
+                    sr.color = Color.cyan;
+                }else if(parryManager.inCooldown){
+                    sr.color = Color.gray;
+                }else if(toxicHit){
+                    sr.color = Color.green;
+                }else if(inToxicMist){
+                    sr.color = new Color(1f, 1-(breathUsed/pd.GetBreathCapacity()), 1f, 1f );
+                }else if(burned){
+                    sr.color = new Color(255f/255f, 153f/255, 43f/255f, 1f);
+                }else if(inFire){
+                    sr.color = new Color(1f, 1-(inFireTime/pd.GetFireEntryTime()), 1-(inFireTime/pd.GetFireEntryTime()), 1f);
                 }else{
                     sr.color = Color.white;
                 }
@@ -397,13 +451,19 @@ public class PlayerScript : MonoBehaviour{
     }
     private IEnumerator ResetHemaGoldCooldown(){
         yield return new WaitForSecondsRealtime(pd.IsHemaMetalEquipped((int)Metal.ELECTRUM) ? 7f : 15f);
-        pd.GetHemaMetalIfEquipped((int)Metal.GOLD).Activate();
+        HemaMetal hmGol = pd.GetHemaMetalIfEquipped((int)Metal.GOLD);
+        if( hmGol != null ){
+            hmGol.Activate();
+        }
         StartCoroutine(ResetHemaGoldCooldown());
     }
 
     void Update(){
         SetMetalWheel();
+        SetConsumibleWheel();
         SetObjective();
+
+        TurnOffUnusedAloMetal();
     }
 
     private void SetMetalWheel(){
@@ -431,7 +491,13 @@ public class PlayerScript : MonoBehaviour{
                 slotsMetalWheel[i-1].sprite = spritesMetales[idMetal - 1];
                 slotsMetalWheelMenu[i-1].sprite = spritesMetales[idMetal - 1];
                 if(i == selectedAloMetalSlot){
-                    if(!am.IsBurning()){
+                    if(pd.GetHemaMetalIfEquipped((int)Metal.ALUMINIUM) != null){
+                        slotsMetalWheel[i-1].color = Color.black;
+                        slotsMetalWheelMenu[i-1].color = Color.black;
+                    }else if(am.GetAmount() <= 0){
+                        slotsMetalWheel[i-1].color = Color.gray;
+                        slotsMetalWheelMenu[i-1].color = Color.gray;
+                    }else if(!am.IsBurning()){
                         slotsMetalWheel[i-1].color = Color.red;
                         slotsMetalWheelMenu[i-1].color = Color.white;
                     }else{
@@ -459,7 +525,13 @@ public class PlayerScript : MonoBehaviour{
                      $"<size=16>{descripcionMetalAlo[idMetal-1]}</size><br>"+
                      $"<size=16>{cant} - {cap}</size>";
                 }else{
-                    if(!am.IsBurning()){
+                    if(pd.GetHemaMetalIfEquipped((int)Metal.ALUMINIUM) != null){
+                        slotsMetalWheel[i-1].color = Color.black;
+                        slotsMetalWheelMenu[i-1].color = Color.black;
+                    }else if(am.GetAmount() <= 0){
+                        slotsMetalWheel[i-1].color = Color.gray;
+                        slotsMetalWheelMenu[i-1].color = Color.gray;
+                    }else if(!am.IsBurning()){
                         slotsMetalWheel[i-1].color = Color.white;
                         slotsMetalWheelMenu[i-1].color = Color.white;
                     }else{
@@ -482,6 +554,67 @@ public class PlayerScript : MonoBehaviour{
         if (context.canceled){
             selectingMetal = false;
             cvMetalWheel.SetActive(false);
+            Time.timeScale = 1f;
+            musicObject.GetComponent<AudioSource>().pitch = 1f;
+        }
+    }
+
+    private void SetConsumibleWheel(){
+        Consumible[] inventory = pd.GetInventory();
+
+        for (int i = 0; i < inventory.Length; i++){
+            Consumible cons = inventory[i];
+
+            if (cons == null){
+                // Slot vacío
+                Color c = slotsConsumibleWheel[i].color;
+                Color cM = slotsConsumibleWheelMenu[i].color;
+                c.a = 0f;
+                cM.a = 0f;
+                slotsConsumibleWheel[i].color = c;
+                slotsConsumibleWheelMenu[i].color = cM;
+            } else {
+                // Slot con consumible
+                Sprite sprite = cons.GetSprite();
+                Debug.Log($"[ConsumibleWheel] Slot {i} - Sprite: {sprite?.name}");
+
+                slotsConsumibleWheel[i].sprite = sprite;
+                slotsConsumibleWheelMenu[i].sprite = sprite;
+
+                Color normalColor = Color.white;
+                Color selectedColor = new Color(1f, 0.75f, 0.25f, 1f); // dorado suave
+
+                if (i + 1 == selectedConsumibleSlot){
+                    slotsConsumibleWheel[i].color = selectedColor;
+                    slotsConsumibleWheelMenu[i].color = selectedColor;
+
+                    txtConsumibleRueda.text = $"<b>{cons.GetName()}</b><br>" +
+                                            $"<size=16>{cons.GetDescription()}</size>";
+                } else {
+                    slotsConsumibleWheel[i].color = normalColor;
+                    slotsConsumibleWheelMenu[i].color = normalColor;
+                }
+            }
+        }
+    }
+
+    public void OnConsume(InputAction.CallbackContext context){
+        if(!selectingConsumible && !selectingMetal && !pauseManager.isPaused && context.action.triggered){
+            pd.GetInventory()[selectedConsumibleSlot-1].Consume();
+        }
+    }
+
+    public void OnOpenConsumibleWheel(InputAction.CallbackContext context){
+        if (context.started && !pauseManager.isPaused){
+            selectingConsumible = true;
+            cvConsumibleWheel.SetActive(true);
+            Time.timeScale = 0.2f;
+            musicObject.GetComponent<AudioSource>().pitch = 0.7f;
+        }
+
+        if (context.canceled){
+            selectingConsumible = false;
+            cvConsumibleWheel.SetActive(false);
             Time.timeScale = 1f;
             musicObject.GetComponent<AudioSource>().pitch = 1f;
         }
@@ -511,11 +644,40 @@ public class PlayerScript : MonoBehaviour{
             }else if(-.9<X && X<-.3 && .3<Y && Y<.9){
                 selectedAloMetalSlot = 8;
             }
+        }else if(selectingConsumible){
+            selectionMetal = Vector2.zero;
+            selectionMetal = context.ReadValue<Vector2>();
+            float X = selectionMetal.x;
+            float Y = selectionMetal.y;
+
+            if(-.3<X && X<.3 && .9<Y && Y<=1){
+                selectedConsumibleSlot = 1;
+            }else if(.3<X && X<.9 && .3<Y && Y<.9){
+                selectedConsumibleSlot = 2;
+            }else if(.9<X && X<=1 && -.3<Y && Y<.3){
+                selectedConsumibleSlot = 3;
+            }else if(.3<X && X<.9 && -.9<Y && Y<-.3){
+                selectedConsumibleSlot = 4;
+            }else if(-.3<X && X<.3 && -1<=Y && Y<-.9){
+                selectedConsumibleSlot = 5;
+            }else if(-.9<X && X<-.3 && -.9<Y && Y<-.3){
+                selectedConsumibleSlot = 6;
+            }else if(-1<=X && X<-.9 && -.3<Y && Y<.3){
+                selectedConsumibleSlot = 7;
+            }else if(-.9<X && X<-.3 && .3<Y && Y<.9){
+                selectedConsumibleSlot = 8;
+            }
         }
     }
 
     void SelectAloMetal(){
+        if(pd.GetHemaMetalIfEquipped((int)Metal.ALUMINIUM) != null) return;
+        if(pd.GetAloMetalInSlot(selectedAloMetalSlot).GetAmount() <= 0) return;
         pd.ChangeAloMetalBurning(selectedAloMetalSlot);
+    }
+
+    void SelectConsumible(){
+        Debug.Log($"ELEGIDO EL CONSUMIBLE Nº: {selectedConsumibleSlot}");
     }
 
     public void OnMove(InputAction.CallbackContext context){
@@ -530,9 +692,9 @@ public class PlayerScript : MonoBehaviour{
         movementInput = context.ReadValue<Vector2>();
     }
     void Move(){
+        if(inNPC) return;
         if(pressingQ)return;
-        // float multiplierAcero = !HasClavo("Acero") ? 1f : (HasClavo("Electro") ? 1.5f : 1.2f);
-        rb.velocity = new Vector2(short_term_thrust*2 + movementInput.x * pd.GetSpeed() * /*multiplierAcero*/1, rb.velocity.y);
+        rb.velocity = new Vector2(short_term_thrust*2 + movementInput.x * pd.GetSpeed() * 1, rb.velocity.y);
 
         if(Mathf.Abs(movementInput.x)>0.01f){
             playerAnimator.SetBool("Running",true);
@@ -551,8 +713,13 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnJump(InputAction.CallbackContext context){
+        if(inNPC) return;
         if(context.started && selectingMetal){
             SelectAloMetal();
+            return;
+        }
+        if(context.started && selectingConsumible){
+            SelectConsumible();
             return;
         }
         if (context.started && !pauseManager.isPaused) {
@@ -639,18 +806,14 @@ public class PlayerScript : MonoBehaviour{
             if (npcBehaviour != null){
                 npcBehaviour.StartDialogue();
             }
-            Debug.Log("Interactuando o ya vo sabe");
             speed = 0;
         }
         if (interacting && inFuente) {
             // pd.SaveToDatabase();
             pd.EnterFuente();
+            burned = false;
+            inFireTime = 0f;
             speed = 0;
-
-            DatabaseManager.Instance.ExecuteNonQuery(
-                $"UPDATE file SET max_health = {lifes} WHERE id = 1;"
-            );
-            actual_lifes = lifes;
             
             canExitFuente = false;
             interacting = false;
@@ -697,16 +860,7 @@ public class PlayerScript : MonoBehaviour{
 
     void Hurt(int damage) {
         if (!isInvulnerable) {
-
-            int dado = UnityEngine.Random.Range(1,101);
-            Debug.Log($"Dado: {dado}");
-            // Debug.Log($"Atium: {HasClavo("Atium")}");
-            // if(!HasClavo("Atium") || dado >= (HasClavo("Electro") ? 15 : 10)){
-                RestarVida(damage);
-            // }else{
-            //     Debug.Log("FEELING LUCKY");
-            // }
-            
+            RestarVida(damage);
 
             if (actual_lifes <= 0){
                 dead = true;
@@ -719,7 +873,7 @@ public class PlayerScript : MonoBehaviour{
     }
 
     void RestarVida(int damage){
-        actual_lifes -= damage;
+        pd.Hurt(damage);
         sr.color = Color.red;
     }
 
@@ -731,12 +885,89 @@ public class PlayerScript : MonoBehaviour{
         sr.color = Color.white;
     }
 
+    bool inToxicMist = false;
+    float breathUsed = 0f;
+    bool toxicHit = false;
+
+    void ChokeByToxicMist(){
+        if(inToxicMist){
+            breathUsed += Time.deltaTime;
+            Debug.Log($"breathUsed: {breathUsed}");
+            if(breathUsed >= pd.GetBreathCapacity()){
+                breathUsed = 0f;
+                pd.EnvironmentHit(15);
+                toxicHit = true;
+                StartCoroutine(ToxicHit());
+            }
+        }else{
+            breathUsed -= Time.deltaTime;
+            if(breathUsed <= 0f){
+                breathUsed = 0f;
+            }
+        }
+    }
+
+    IEnumerator ToxicHit(){
+        yield return new WaitForSeconds(.5f);
+        toxicHit = false;
+    }
+
+
+    bool inFire = false;
+    float inFireTime = 0f;
+    float exitFireTime = 0f;
+    bool burned = false;
+    float nextFireHit;
+
+    void BurnWithFire(){
+        if(inFire){
+            inFireTime += Time.deltaTime;
+            if(inFireTime >= pd.GetFireEntryTime()){
+                inFireTime = pd.GetFireEntryTime();
+                if(!burned){
+                    burned = true;
+                    StartCoroutine(GetHitByFire());
+                }
+            }
+        }else{
+            if(burned){
+                exitFireTime += Time.deltaTime;
+                if(exitFireTime >= pd.GetFireExitTime()){
+                    burned = false;
+                    inFireTime = 0f;
+                    exitFireTime = 0f;
+                }
+            }else{
+                inFireTime -= Time.deltaTime;
+                if(inFireTime <= 0){
+                    inFireTime = 0;
+                }
+            }
+        }
+    }
+
+    IEnumerator GetHitByFire(){
+        if(burned){
+            pd.EnvironmentHit(8);
+            yield return new WaitForSeconds(pd.GetFireHitTime());
+            StartCoroutine(GetHitByFire());
+        }
+    }
+
     void OnTriggerStay2D(Collider2D other){
         if (other.tag == "Floor"){
             grounded = true;
             canDash = true;
         }
+
+        if (other.tag == "ToxicMist"){
+            inToxicMist = true;
+        }
+        if (other.tag == "Fire"){
+            inFire = true;
+        }
     }
+
 
 
     void OnTriggerEnter2D(Collider2D other){
@@ -773,7 +1004,6 @@ public class PlayerScript : MonoBehaviour{
         if (other.CompareTag("NPC")){
             nearAnyNPC = true;
             nearNPC = other.gameObject;
-            Debug.Log($"In NPC");
             if (nearNPC != null) {
                 var npcBehaviour = nearNPC.GetComponent<NPCBehaviour>();
                 if (npcBehaviour != null){
@@ -801,13 +1031,50 @@ public class PlayerScript : MonoBehaviour{
             nearNPC = null;
             inNPC = false;
         }
+
+        if (other.CompareTag("ToxicMist")){
+            inToxicMist = false;
+        }
+        
+        if (other.CompareTag("Fire")){
+            inFire = false;
+        }
+
+        if(CyBManager.inCadBubble && other.tag=="CadmiumBubble"){
+            CyBManager.inCadBubble = false;
+
+            AloMetal amCad = pd.GetAloMetalIfEquipped((int)Metal.CADMIUM);
+            AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+
+            if(amCad != null && amCad.IsBurning()){
+                if(amDur != null && amDur.IsBurning()) return;
+                pd.GetAloMetalIfEquipped((int)Metal.CADMIUM).SetBurning(false);
+            }
+        }
+        
+        if(CyBManager.inBenBubble && other.tag == "BendalloyBubble"){
+            CyBManager.inBenBubble = false;
+
+            AloMetal amBen = pd.GetAloMetalIfEquipped((int)Metal.BENDALLOY);
+            AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+
+            if(amBen != null && amBen.IsBurning()){
+                if(amDur != null && amDur.IsBurning()) return;
+                pd.GetAloMetalIfEquipped((int)Metal.BENDALLOY).SetBurning(false);
+            }
+        }
     }
 
+    public bool hideUnlockingPanel;
     public void OnNextFrase(InputAction.CallbackContext context){
         if(nearAnyNPC && inNPC && context.action.triggered){
             nextFrase = true;
         }else{
             nextFrase = false;
+        }
+
+        if(unlockingManager.canHidePanel){
+            hideUnlockingPanel = true;
         }
     }
 
@@ -954,8 +1221,6 @@ public class PlayerScript : MonoBehaviour{
                 selectedMetalObjective = Mathf.Clamp(selectedMetalObjective, 0, nearMetalObjects.Count - 1);
             }
 
-            Debug.Log($"nearMetalObjects.Count: {nearMetalObjects.Count}, selectedMetalObjective: {selectedMetalObjective}");
-
             GameObject target = nearMetalObjects[selectedMetalObjective];
             if (target == null) yield break; // Si el objetivo es nulo, salimos.
 
@@ -965,7 +1230,7 @@ public class PlayerScript : MonoBehaviour{
             float thrust = directionMultiplier * 1f;
             AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
             if (amDur != null && amDur.IsBurning()){
-                thrust *= 3f; // Aumentamos la fuerza si Duraluminio está siendo quemado.
+                thrust *= 3f; // Aumentamos la fuerza si Duralumín está siendo quemado.
             }
 
             Vector2 force = direction * thrust;
@@ -992,6 +1257,13 @@ public class PlayerScript : MonoBehaviour{
     public void OnPullingEmotion(InputAction.CallbackContext context){
         if(pressingQ && context.started){
             // Debug.Log("Pulsando: PULLING EMOTION");
+        }
+    }
+
+    public void OnParry(InputAction.CallbackContext context){
+        if(context.started){
+            locuraManager.ConsumeLaudano();
+            parryManager.TryParry();
         }
     }
 }

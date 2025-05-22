@@ -32,7 +32,12 @@ public class FeruquimiaManager : MonoBehaviour{
             } else if (status == -1){
                 slotsRellenar[i-1].color = Color.blue;
             } else {
-                slotsRellenar[i-1].color = Color.white;
+                slotsRellenar[i-1].color = new Color(
+                    156f/255f,
+                    149f/255f,
+                    173f/255f,
+                    1f
+                    );
             }
         }
         UpdateRueda();

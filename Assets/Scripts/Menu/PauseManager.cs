@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,8 @@ using TMPro;
 using System.Linq;
 
 public class PauseManager : MonoBehaviour{
+
+    GameObject panelActual;
 
     private string[] nombreMetalAlo = new string[] {
         "Hierro",
@@ -24,7 +27,7 @@ public class PauseManager : MonoBehaviour{
         "Cromo",
         "Nicrosil",
         "Aluminio",
-        "Duraluminio",
+        "Duralumín",
         "Atium",
     };
     private string[] descripcionMetalAlo = new string[] {
@@ -73,7 +76,7 @@ public class PauseManager : MonoBehaviour{
         // Aluminio
         "Hace perder al brumoso sus propias reservas alománticas.\nAl quemarlo, todas las reservas se perderán rápidamente.",
 
-        // Duraluminio
+        // Duralumín
         "Hace perder al brumoso sus propias reservas alománticas de los metales que esté quemando en un estallido de poder.\nEste metal puede ser muy poderoso, pero peligroso dependiendo del metal que se queme.",
 
         // Atium
@@ -95,7 +98,7 @@ public class PauseManager : MonoBehaviour{
         "Brazal de Cromo",
         "Esclava de Nicrosil",
         "Brazalete de Aluminio",
-        "Pulsera de Duraluminio",
+        "Pulsera de Duralumín",
         "Esclava de Atium",
     };
     private string[] descripcionMetalFeru = new string[] {
@@ -163,7 +166,7 @@ public class PauseManager : MonoBehaviour{
         "Al guardarse, la identidad propia se verá absorbida, permitiendo crear mentes de metal sin dueño pero facilita el influjo de la hemalurgia, "+
         "al decantarse, el efecto de la hemalurgia se revertirá.",
 
-        // Pulsera de Duraluminio
+        // Pulsera de Duralumín
         "Una alcayata de duraluminio de aspecto resistente.\n" +
         "La conexión que se pueda tener con el entorno se reducirá al guardarse, aumentando la hostilidad de los transeuntes, mientras que al extraerse hará que sean más cercanos.",
 
@@ -188,7 +191,7 @@ public class PauseManager : MonoBehaviour{
         "Escarpia de Cromo",
         "Clavo de Nicrosil",
         "Tornillo de Aluminio",
-        "Alcayata de Duraluminio",
+        "Alcayata de Duralumín",
         "Escarpia de Atium",
     };
     private string[] descripcionMetalHema = new string[] {
@@ -252,7 +255,7 @@ public class PauseManager : MonoBehaviour{
         "Quitado del abdomen de un embalsamador altruista.\n"+
         "Impregando de su resiliencia, acelera la desaparición de efectos negativos.",
 
-        //Alcayata de Duraluminio
+        //Alcayata de Duralumín
         "Extirpada del brazo de un guardaespaldas violento sin familia.\n"+
         "Pringada de su fuerza, permite concentrar ataques más potentes.",
 
@@ -269,10 +272,13 @@ public class PauseManager : MonoBehaviour{
 
     public float transitionDuration = 0.15f;
 
-    private int selectedMetalIndex = 0;
+    private int selectedIndex = 0;
     private int selectedMetalIndexAlo = 0;
     private int selectedMetalIndexFeru = 0;
     private int selectedMetalIndexHema = 0;
+    private int selectedMetalVialIndex = 0;
+    private int selectedRawMetalVialIndex = 0;
+
     private GameObject grupoMetal;
 
     private bool canChangeMetal = true;
@@ -310,6 +316,12 @@ public class PauseManager : MonoBehaviour{
     public Sprite[] objetosSprite;
 
     public GameObject rellenos;
+    
+    public Sprite[] vialesMetalesSprites;
+    public GameObject Viales;
+    public GameObject Metales;
+    public GameObject Detalles;
+
     Dictionary<string, string> coloresMetales = new Dictionary<string, string>(){
         {"Hierro", "#4B4B4B"},
         {"Acero", "#A9A9A9"},
@@ -326,13 +338,14 @@ public class PauseManager : MonoBehaviour{
         {"Cromo", "#C0C0C0"},
         {"Nicrosil", "#D3D3D3"},
         {"Aluminio", "#ADD8E6"},
-        {"Duraluminio", "#4682B4"},
+        {"Duralumín", "#4682B4"},
         {"Atium", "#5EF2DC"},
     };
 
     PlayerData pd;
 
     void Start(){
+        panelActual = menuPanels[currentPanelIndex];
         playerScript = FindObjectOfType<PlayerScript>();
         if (playerScript == null) {
             Debug.LogError("No se encontró el PlayerScript en la escena.");
@@ -345,16 +358,18 @@ public class PauseManager : MonoBehaviour{
             menuPanels[i].SetActive(false);
         }
         menuPanels[0].SetActive(true);
+        Detalles.transform.GetChild(1).gameObject.SetActive(false);
     }
 
     public void Update(){
         pd = playerScript.pd;
+        panelActual = menuPanels[currentPanelIndex];
 
         DetectMetalPage();
         isDatos();
         UpdateHemalurgy();
         UpdateSelection();
-        UpdateObjects();
+        UpdateInventory();
         UpdateMetales();
     }
 
@@ -409,13 +424,40 @@ public class PauseManager : MonoBehaviour{
                 break;
         }
         txtEstado.text = text;
+        switch (pd.GetPhase()){
+            case "silencio":
+                text = "Silencio en la Bruma";
+                break;
+            case "murmullos":
+                text = "Murmullos de las Paredes";
+                break;
+            case "ojos":
+                text = "Ojos en la Oscuridad";
+                break;
+            case "mundo":
+                text = "El Mundo se Rompe";
+                break;
+            case "dominio":
+                text = "Dominio de Ruina";
+                break;
+            case "extasis":
+                text = "Éxtasis Hemalúrgico";
+                break;
+            case "declive":
+                text = "Declive Metálico";
+                break;
+            default:
+                text = "��";
+                break;
+        }
+        txtFase.text = text;
 
         for(int i = 1; i <= pd.GetHemaSlots().Length; i++){
             HemaMetal hm = pd.GetHemaMetalInSlot(i);
             if(hm != null){
                 slotsHemaImages[i-1].gameObject.SetActive(true);
-                slotsHemaImages[i-1].sprite = spritesHema[i-1];
-                if(selectedMetalIndexHema+1 == i){
+                slotsHemaImages[i-1].sprite = spritesHema[(int)hm.GetMetal()-1];
+                if(selectedMetalIndexHema+1 == (int)hm.GetMetal()){
                     slotsHemaImages[i-1].color = Color.yellow;
                 }else{
                     slotsHemaImages[i-1].color = Color.white;
@@ -452,9 +494,9 @@ public class PauseManager : MonoBehaviour{
             grupoMetal = grupoTransform.gameObject;
 
             for (int j = 0; j < grupoMetal.transform.childCount; j++){
-                bool desbloqueado = (bool)DatabaseManager.Instance.ExecuteScalar(
-                    $"SELECT unlocked_{panelActual.name[5].ToString().ToLower()} FROM metal_file WHERE file_id = 1 AND metal_id = {j + 1};"
-                );
+                bool desbloqueado = (inWhatMetalPage[0] ? pd.GetUnlockedAloMetals() : 
+                                    inWhatMetalPage[1] ? pd.GetUnlockedFeruMetals() : 
+                                    inWhatMetalPage[2] ? pd.GetUnlockedHemaMetals() : null )[j] == 1;
 
                 GameObject metal = grupoMetal.transform.GetChild(j).gameObject;
                 metal.SetActive(desbloqueado);
@@ -489,7 +531,9 @@ public class PauseManager : MonoBehaviour{
         DetectMetalPage();
         if (context.performed && isPaused && inMetalPage){
             ChangeSelectedMetal(-1);
-        }else{
+        }else if (context.performed && isPaused && panelActual.name == "PanelMetales"){
+            ChangeVial(-1);
+        }else if (context.performed && isPaused && panelActual.name == "PanelInventario"){
             ChangeSelectedObject(-1,0);
         }
     }
@@ -497,17 +541,19 @@ public class PauseManager : MonoBehaviour{
         DetectMetalPage();
         if (context.performed && isPaused && inMetalPage){
             ChangeSelectedMetal(1);
-        }else{
+        }else if (context.performed && isPaused && panelActual.name == "PanelMetales"){
+            ChangeVial(1);
+        }else if (context.performed && isPaused && panelActual.name == "PanelInventario"){
             ChangeSelectedObject(1,0);
         }
     }
     public void OnMoveUp(InputAction.CallbackContext context){
-        if (context.performed && isPaused){
+        if (context.performed && isPaused && panelActual.name == "PanelInventario"){
             ChangeSelectedObject(0,-1);
         }
     }
     public void OnMoveDown(InputAction.CallbackContext context){
-        if (context.performed && isPaused){
+        if (context.performed && isPaused && panelActual.name == "PanelInventario"){
             ChangeSelectedObject(0,1);
         }
     }
@@ -549,48 +595,109 @@ public class PauseManager : MonoBehaviour{
         canChangeObjeto = true;
     }
 
-    private void UpdateObjects(){
-        List<Objeto> objetosDes = playerScript.objetosDesbloqueados;
-        int spriteIndex = 0;
+    private Consumible[,] consumibleGrid;
 
-        for (int fila = 0; fila < objetos.Length; fila++){
-            for (int col = 0; col < objetos[0].columnas.Length; col++){
+    private void UpdateInventory() {
+        int totalSlots = 12; // 4 columnas * 3 filas
+        int vialMetalCount = 8;
+        int laudanumIndex = 8; // slot para láudano
+        int projectileStartIndex = 9; // primer slot para proyectiles
+
+        // Obtén las listas de consumibles desde pd
+        Consumible[] vialesMetales = (Consumible[])pd.GetMetalVials();
+        Consumible laudanum = pd.GetLaudano();
+        Consumible[] proyectiles = (Consumible[])pd.GetProjectiles();
+
+        int filas = objetos.Length;
+        int columnas = objetos[0].columnas.Length;
+
+        consumibleGrid = new Consumible[filas, columnas];
+
+        int slotIndex = 0;
+
+        for (int fila = 0; fila < filas; fila++) {
+            for (int col = 0; col < columnas; col++) {
                 Image img = objetos[fila].columnas[col].transform.GetChild(0).GetComponent<Image>();
+                Consumible asignado = null;
 
-                if (spriteIndex < objetosDes.Count){
-                    Objeto obj = objetosDes[spriteIndex];
-                    if (obj.id >= 0 && obj.id < objetosSprite.Length){
-                        img.sprite = objetosSprite[obj.id-1];
-                        img.color = new Color(1, 1, 1, 1);
-                    }else{
+                if (slotIndex < vialMetalCount) {
+                    if (slotIndex < vialesMetales.Length && vialesMetales[slotIndex] != null) {
+                        img.sprite = vialesMetales[slotIndex].GetSprite();
+                        img.color = Color.white;
+                        asignado = vialesMetales[slotIndex];
+                    } else {
                         img.sprite = null;
                         img.color = new Color(1, 1, 1, 0);
                     }
-                    spriteIndex++;
-                }else{
+                } else if (slotIndex == laudanumIndex) {
+                    if (laudanum != null) {
+                        img.sprite = laudanum.GetSprite();
+                        img.color = Color.white;
+                        asignado = laudanum;
+                    } else {
+                        img.sprite = null;
+                        img.color = new Color(1, 1, 1, 0);
+                    }
+                } else if (slotIndex >= projectileStartIndex && slotIndex < totalSlots) {
+                    int projectileIndex = slotIndex - projectileStartIndex;
+                    if (projectileIndex < proyectiles.Length && proyectiles[projectileIndex] != null) {
+                        img.sprite = proyectiles[projectileIndex].GetSprite();
+                        img.color = Color.white;
+                        asignado = proyectiles[projectileIndex];
+                    } else {
+                        img.sprite = null;
+                        img.color = new Color(1, 1, 1, 0);
+                    }
+                } else {
                     img.sprite = null;
                     img.color = new Color(1, 1, 1, 0);
                 }
+
+                consumibleGrid[fila, col] = asignado; // <- aquí se guarda el objeto real
+                SetData(GetConsumibleSeleccionado());
+                slotIndex++;
             }
         }
     }
 
+    public GameObject InfoInventario;
+
+    void SetData(Consumible consu){
+        if(consu == null) return;
+        InfoInventario.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = consu.GetName();
+        InfoInventario.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = consu.GetDescription();
+    }
+    
+    public Consumible GetConsumibleSeleccionado() {
+        if (consumibleGrid == null) return null;
+        return consumibleGrid[selectedIndexObjetosY, selectedIndexObjetosX];
+    }
+
     public void OnSelect(InputAction.CallbackContext context){
-        if (context.performed && isPaused){
+        if (context.performed && isPaused && panelActual.name == "PanelInventario" ){
+            SelectInventory();
+        }else if (context.performed && isPaused){
             Select();
         }
     }
 
+    void SelectInventory(){
+        pd.EquipItem(GetConsumibleSeleccionado());
+    }
+
     private void Select() {
-        if(inMetalPage && selectedMetalIndex >= 0){
+        if(inMetalPage && selectedIndex >= 0){
             if (inWhatMetalPage[0]) {
-                pd.EquipAloMetal(selectedMetalIndex+1);
+                pd.EquipAloMetal(selectedIndex+1);
             } else if (inWhatMetalPage[1]) {
-                pd.EquipFeruMetal(selectedMetalIndex+1);
+                pd.EquipFeruMetal(selectedIndex+1);
             } else if (inWhatMetalPage[2]) {
-                pd.EquipHemaMetal(selectedMetalIndex+1);
+                pd.EquipHemaMetal(selectedIndex+1);
             }
-        }
+        } else if (panelActual.name == "PanelMetales" && selectedIndex >= 0) {
+                Debug.Log("Selecteando en metales");
+                HandleSelectMetalVial();
+            }
 
         UpdateSelection();
     }
@@ -641,6 +748,58 @@ public class PauseManager : MonoBehaviour{
         canChangeMetal = true;
     }
 
+    bool selectedVial = false;
+
+    private void ChangeVial(int direction){
+        if (!canChangeMetal) {
+            return;
+        }
+
+        int opciones;
+        int newIndex;
+
+        if (panelActual.name == "PanelMetales" && !selectedVial) {
+            opciones = Viales.transform.GetChild(0).childCount;
+            newIndex = selectedMetalVialIndex;
+
+        }else if (panelActual.name == "PanelMetales" && selectedVial) {
+            opciones = Metales.transform.GetChild(0).childCount;
+            newIndex = selectedRawMetalVialIndex;
+
+        }else{
+            return;
+        }
+
+        for (int i = 0; i < opciones; i++) {
+            newIndex = (newIndex + direction + opciones) % opciones;
+
+            if (panelActual.name == "PanelMetales" && !selectedVial) {
+                if (Viales.transform.GetChild(0).transform.GetChild(newIndex).gameObject.activeSelf) {
+                    selectedMetalVialIndex = newIndex;
+
+                    UpdateSelection();
+
+                    canChangeMetal = false;
+                    StartCoroutine(ResetChangeCooldown());
+
+                    return;
+                }
+            } else if (panelActual.name == "PanelMetales" && selectedVial) {
+                Debug.Log("CAMBIANDO DE METALES TRAS ELEGIR VIAL");
+                if (Metales.transform.GetChild(0).transform.GetChild(newIndex).gameObject.activeSelf) {
+                    selectedRawMetalVialIndex = newIndex;
+
+                    UpdateSelection();
+
+                    canChangeMetal = false;
+                    StartCoroutine(ResetChangeCooldown());
+
+                    return;
+                }
+            }
+        }
+    }
+
     private IEnumerator TransitionPanels(GameObject oldPanel, GameObject newPanel){
         newPanel.SetActive(true);
         oldPanel.SetActive(false);
@@ -648,14 +807,263 @@ public class PauseManager : MonoBehaviour{
         yield return null;
     }
 
+    int[] rawMetalsUsed = new int[17];
+
+    int GetCapacityOfActualMetalVial(){
+        int res = 0;
+        foreach(int i in rawMetalsUsed){
+            res += i;
+        }
+
+        return res;
+    }
+
+    void HandleSelectMetalVial(){
+        Debug.Log("Handleando");
+        Debug.Log($"pd.GetMetalVialBySlot(selectedMetalVialIndex+1).content.Count: {pd.GetMetalVialBySlot(selectedIndex+1).content.Count}");
+        if (pd.GetMetalVialBySlot(selectedMetalVialIndex+1).content.Count == 0 && !selectedVial) {
+            Debug.Log("SELECCIONANDO UN VIAL VACÍO");
+            selectedVial = true;
+            UpdateSelection();
+            ShowNewMetalVialData();
+        } else if(selectedVial) {
+            MasMetal();
+            Debug.Log($"Elegido: {(Metal)selectedRawMetalVialIndex+1}");
+        }
+    }
+
+    void MasMetal(){
+        rawMetalsUsed[selectedRawMetalVialIndex] += 20;
+        if(rawMetalsUsed[selectedRawMetalVialIndex] > pd.GetRawMetalByMetalId(selectedRawMetalVialIndex+1).amount || GetCapacityOfActualMetalVial()>1000){
+            rawMetalsUsed[selectedRawMetalVialIndex] -= 20;
+        }
+        ShowNewMetalVialData();
+    }
+
+    public void OnMenosMetal(InputAction.CallbackContext context){
+        if (context.performed && isPaused && panelActual.name == "PanelMetales" && selectedVial){
+            Debug.Log($"Elegido: {(Metal)selectedRawMetalVialIndex+1}");
+            MenosMetal();
+        }
+    }
+
+    void MenosMetal(){
+        if(rawMetalsUsed[selectedRawMetalVialIndex] > 0){
+            rawMetalsUsed[selectedRawMetalVialIndex] -= 20;
+        }
+        ShowNewMetalVialData();
+    }
+
+    void ShowNewMetalVialData(){
+        for(int i = 0; i < rawMetalsUsed.Length; i++){
+            string[] fisicos = {"Hierro","Acero","Estaño","Peltre"};
+            string[] mentales = {"Zinc","Latón","Cobre","Bronce"};
+            string[] temporales = {"Cadmio","Bendaleo","Oro","Electro"};
+            string[] espirituales = {"Cromo","Nicrosil","Aluminio","Duralumín"};
+            string[] atium = {"Atium"};
+
+            string[][] nombre = {fisicos,mentales,temporales,espirituales,atium};
+            if(i<16){
+                Detalles.transform.GetChild(1).GetChild((i / 4)+1).GetChild(i % 4).GetComponent<TextMeshProUGUI>().text = $"{nombre[i/4][i%4]}: {rawMetalsUsed[i]}";
+            }else{
+                Detalles.transform.GetChild(1).GetChild(5).GetComponent<TextMeshProUGUI>().text = $"{nombre[i/4][i%4]}: {rawMetalsUsed[i]}";
+            }
+        }
+    }
+
+    public void OnCancelMetalVial(InputAction.CallbackContext context){
+        if (context.performed && isPaused && panelActual.name == "PanelMetales" && selectedVial){
+            CleanUsedRawMetals();
+        }
+    }
+
+    public void OnAcceptMetalVial(InputAction.CallbackContext context){
+        if (context.performed && isPaused && panelActual.name == "PanelMetales" && selectedVial){
+            AcceptMetalVial();
+        }
+    }
+
+    void AcceptMetalVial(){
+        for(int i = 0; i < rawMetalsUsed.Length; i++){
+            // content.Add(new MetalVialContent((Metal)i+1, rawMetalsUsed[i]));
+            if(rawMetalsUsed[i] > 0){
+                pd.AddRawMetalToMetalVial(selectedMetalVialIndex, i+1, rawMetalsUsed[i]);
+                rawMetalsUsed[i] = 0;
+            }
+        }
+        CleanUsedRawMetals();
+    }
+
+    void CleanUsedRawMetals(){
+        for(int i = 0; i < rawMetalsUsed.Length; i++){
+            rawMetalsUsed[i] = 0;
+        }
+        selectedRawMetalVialIndex = 0;
+        selectedVial = false;
+        UpdateSelection();
+    }
+
     private void UpdateSelection(){
         if (inWhatMetalPage[0]) {
-            selectedMetalIndex = selectedMetalIndexAlo;
+            selectedIndex = selectedMetalIndexAlo;
+
         } else if (inWhatMetalPage[1]) {
-            selectedMetalIndex = selectedMetalIndexFeru;
+            selectedIndex = selectedMetalIndexFeru;
+
         } else if (inWhatMetalPage[2]) {
-            selectedMetalIndex = selectedMetalIndexHema;
+            selectedIndex = selectedMetalIndexHema;
+
+        } else if (panelActual.name == "PanelMetales" && !selectedVial) {
+            selectedIndex = selectedMetalVialIndex;
+
+        } else if (panelActual.name == "PanelMetales" && !selectedVial) {
+            selectedIndex = selectedRawMetalVialIndex;
+
         }
+
+        if (panelActual.name == "PanelMetales" && !selectedVial) {
+            Detalles.transform.GetChild(1).gameObject.SetActive(false);
+            for (int i = 1; i <= Metales.transform.GetChild(0).childCount; i++) {
+                Metales.transform.GetChild(0).GetChild(i - 1).GetComponent<Image>().color = Color.white;
+            }
+            for (int i = 1; i <= Viales.transform.GetChild(0).childCount; i++) {
+                Image img = Viales.transform.GetChild(0).GetChild(i - 1).GetComponent<Image>();
+
+                if (pd.GetMetalVialBySlot(i).content.Count == 0) {
+                    img.sprite = vialesMetalesSprites[0];
+                } else {
+                    img.sprite = vialesMetalesSprites[1];
+                }
+
+                if (img != null) {
+                    if (i - 1 == selectedIndex) {
+                        img.color = Color.red;
+
+                        MetalVial mv = pd.GetMetalVialBySlot(i);
+                        if(i!=17){
+                            Detalles.transform.GetChild(0).GetChild(((i-1) % 2)).GetChild((i-1) / 2).GetComponent<TextMeshProUGUI>().color = Color.white;
+                        }else{
+                            Detalles.transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>().color = Color.white;
+                        }
+
+                        int[] cantidades = new int[18];
+
+                        foreach (MetalVialContent mvc in mv.content) {
+                            cantidades[(int)mvc.metal] = mvc.amount;
+                        }
+
+                        string[] nombresIzquierda = {"Hierro","Estaño","Zinc","Cobre","Cadmio","Oro","Cromo","Aluminio"};
+                        string[] nombresDerecha   = {"Acero","Peltre","Latón","Bronce","Bendaleo","Electro","Nicrosil","Duralumín"};
+
+                        // Izquierda (impares 1, 3, 5, ...)
+                        for (int j = 0; j < 8; j++) {
+                            int metalIndex = 1 + j * 2;
+                            string nombre = nombresIzquierda[j];
+                            int cantidad = cantidades[metalIndex];
+
+                            Detalles.transform.GetChild(0).GetChild(0).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().color = cantidad > 0 ? Color.cyan : Color.white;
+
+                            Detalles.transform.GetChild(0).GetChild(0).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().text = $"{nombre}: {cantidad:0}";
+                        }
+
+                        // Derecha (pares 2, 4, 6, ...)
+                        for (int j = 0; j < 8; j++) {
+                            int metalIndex = 2 + j * 2;
+                            string nombre = nombresDerecha[j];
+                            int cantidad = cantidades[metalIndex];
+                            
+                            Detalles.transform.GetChild(0).GetChild(1).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().color = cantidad > 0 ? Color.cyan : Color.white;
+
+                            Detalles.transform.GetChild(0).GetChild(1).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().text = $"{nombre}: {cantidad:0}";
+                        }
+
+                        // Atium (17)
+                        int cantidadAtium = cantidades[17];
+                            
+                        Detalles.transform.GetChild(0).GetChild(2)
+                            .GetComponent<TextMeshProUGUI>().color = cantidadAtium > 0 ? Color.cyan : Color.white;
+                            
+                        Detalles.transform.GetChild(0).GetChild(2)
+                            .GetComponent<TextMeshProUGUI>().text = $"Atium: {cantidadAtium:0}";
+                    } else {
+                        img.color = Color.white;
+                        if(i!=17){
+                            TextMeshProUGUI txt = Detalles.transform.GetChild(0).GetChild(((i-1) % 2)).GetChild((i-1) / 2).GetComponent<TextMeshProUGUI>();
+                            txt.color = txt.color == Color.cyan ? Color.cyan : Color.white;
+                        }else{
+                            TextMeshProUGUI txt = Detalles.transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>();
+                            txt.color = txt.color == Color.cyan ? Color.cyan : Color.white;
+                        }
+                    }
+                }
+            }
+            return;
+        }else if(panelActual.name == "PanelMetales" && selectedVial){
+            Detalles.transform.GetChild(1).gameObject.SetActive(true);
+            for (int i = 1; i <= Metales.transform.GetChild(0).childCount; i++) {
+                Image img = Metales.transform.GetChild(0).GetChild(i - 1).GetComponent<Image>();
+
+                if (img != null) {
+                    int indiceSeleccionado = selectedVial ? selectedRawMetalVialIndex : selectedMetalVialIndex;
+
+                    if (i - 1 == indiceSeleccionado){
+                        if(i!=17){
+                            Detalles.transform.GetChild(0).GetChild(((i-1) % 2)).GetChild((i-1) / 2).GetComponent<TextMeshProUGUI>().color = Color.yellow;
+                            Detalles.transform.GetChild(1).GetChild(((i-1) / 4)+1).GetChild((i-1) % 4).GetComponent<TextMeshProUGUI>().color = Color.yellow;
+                        }else{
+                            Detalles.transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>().color = Color.yellow;
+                            Detalles.transform.GetChild(1).GetChild(5).GetComponent<TextMeshProUGUI>().color = Color.yellow;
+                        }
+                        img.color = Color.red;
+
+                        int[] cantidades = new int[18];
+
+                        foreach (RawMetal rm in pd.GetRawMetals()) {
+                            cantidades[(int)rm.metal] = rm.amount;
+                        }
+
+                        string[] nombresIzquierda = {"Hierro","Estaño","Zinc","Cobre","Cadmio","Oro","Cromo","Aluminio"};
+                        string[] nombresDerecha   = {"Acero","Peltre","Latón","Bronce","Bendaleo","Electro","Nicrosil","Duralumín"};
+
+                        for (int j = 0; j < 8; j++) {
+                            int metalIndex = 1 + j * 2;
+                            string nombre = nombresIzquierda[j];
+                            int cantidad = cantidades[metalIndex];
+                            Detalles.transform.GetChild(0).GetChild(0).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().text = $"{nombre}: {(cantidad > 0 ? (cantidad - rawMetalsUsed[metalIndex-1]) : 0)}";
+                        }
+
+                        for (int j = 0; j < 8; j++) {
+                            int metalIndex = 2 + j * 2;
+                            string nombre = nombresDerecha[j];
+                            int cantidad = cantidades[metalIndex];
+                            Detalles.transform.GetChild(0).GetChild(1).GetChild(j)
+                                .GetComponent<TextMeshProUGUI>().text = $"{nombre}: {(cantidad > 0 ? (cantidad - rawMetalsUsed[metalIndex-1]) : 0)}";
+                        }
+
+                        int cantidadAtium = cantidades[17];
+                        Detalles.transform.GetChild(0).GetChild(2)
+                            .GetComponent<TextMeshProUGUI>().text = $"Atium: {(cantidadAtium > 0 ? (cantidadAtium - rawMetalsUsed[16]) : 0)}";
+
+                    } else {
+                        img.color = Color.white;
+                        if(i!=17){
+                            Detalles.transform.GetChild(0).GetChild(((i-1) % 2)).GetChild((i-1) / 2).GetComponent<TextMeshProUGUI>().color = Color.white;
+                            Detalles.transform.GetChild(1).GetChild(((i-1) / 4)+1).GetChild((i-1) % 4).GetComponent<TextMeshProUGUI>().color = Color.white;
+                        }else{
+                            Detalles.transform.GetChild(0).GetChild(2).GetComponent<TextMeshProUGUI>().color = Color.white;
+                            Detalles.transform.GetChild(1).GetChild(5).GetComponent<TextMeshProUGUI>().color = Color.white;
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
         if (grupoMetal == null) return;
         if (!inMetalPage) return;
 
@@ -670,7 +1078,7 @@ public class PauseManager : MonoBehaviour{
 
 
             if (img != null){
-                img.color = (i-1 == selectedMetalIndex) ?
+                img.color = (i-1 == selectedIndex) ?
                     (slotOcupado ?
                         Color.red :
                         Color.magenta
@@ -684,32 +1092,30 @@ public class PauseManager : MonoBehaviour{
             }
         }
 
-        GameObject panelActual = menuPanels[currentPanelIndex];
-
         if (inWhatMetalPage[0]){
             if (txtAccion != null && txtPosicion != null && txtTipo != null){
-                txtNombreAlo.text = nombreMetalAlo[selectedMetalIndex];
-                txtDescripcionAlo.text = descripcionMetalAlo[selectedMetalIndex];
+                txtNombreAlo.text = nombreMetalAlo[selectedIndex];
+                txtDescripcionAlo.text = descripcionMetalAlo[selectedIndex];
 
-                txtAccion.text = selectedMetalIndex%2 == 0 ? "Tirón" : "Empuje";
+                txtAccion.text = selectedIndex%2 == 0 ? "Tirón" : "Empuje";
 
-                txtPosicion.text = (selectedMetalIndex % 4 == 1 || selectedMetalIndex % 4 == 0) ? "Externo" : "Interno";
+                txtPosicion.text = (selectedIndex % 4 == 1 || selectedIndex % 4 == 0) ? "Externo" : "Interno";
 
                 txtTipo.text =
-                (selectedMetalIndex % 16 == 0 || selectedMetalIndex % 16 == 1 || selectedMetalIndex % 16 == 2 || selectedMetalIndex % 16 == 3) ? "Físico" :
-                (selectedMetalIndex % 16 == 4 || selectedMetalIndex % 16 == 5 || selectedMetalIndex % 16 == 6 || selectedMetalIndex % 16 == 7) ? "Mental" :
-                (selectedMetalIndex % 16 == 8 || selectedMetalIndex % 16 == 9 || selectedMetalIndex % 16 == 10 || selectedMetalIndex % 16 == 11) ? "Temporal" :
+                (selectedIndex % 16 == 0 || selectedIndex % 16 == 1 || selectedIndex % 16 == 2 || selectedIndex % 16 == 3) ? "Físico" :
+                (selectedIndex % 16 == 4 || selectedIndex % 16 == 5 || selectedIndex % 16 == 6 || selectedIndex % 16 == 7) ? "Mental" :
+                (selectedIndex % 16 == 8 || selectedIndex % 16 == 9 || selectedIndex % 16 == 10 || selectedIndex % 16 == 11) ? "Temporal" :
                 "Espiritual";
             }
         }else if (inWhatMetalPage[1]){
             if (txtNombreFeruquimia != null && txtDescripcionFeruquimia != null){
-                txtNombreFeruquimia.text = nombreMetalFeru[selectedMetalIndex];
-                txtDescripcionFeruquimia.text = descripcionMetalFeru[selectedMetalIndex];
+                txtNombreFeruquimia.text = nombreMetalFeru[selectedIndex];
+                txtDescripcionFeruquimia.text = descripcionMetalFeru[selectedIndex];
             }
         }else if(inWhatMetalPage[2]){
             if (txtNombreHemalurgia != null && txtDescripcionHemalurgia != null){
-                txtNombreHemalurgia.text = nombreMetalHema[selectedMetalIndex];
-                txtDescripcionHemalurgia.text = descripcionMetalHema[selectedMetalIndex];
+                txtNombreHemalurgia.text = nombreMetalHema[selectedIndex];
+                txtDescripcionHemalurgia.text = descripcionMetalHema[selectedIndex];
             }
         }
     }

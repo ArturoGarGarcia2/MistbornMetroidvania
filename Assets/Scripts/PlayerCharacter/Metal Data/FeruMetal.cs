@@ -46,14 +46,12 @@ public class FeruMetal{
                 amount=capacity;
                 SetStatus(0);
             }
-            Debug.Log($"Guardando en {this.GetMetal()}");
         }else if(status == -1){
             amount-=tappingRate;
             if(amount<0){
                 amount=0;
                 SetStatus(0);
             }
-            Debug.Log($"Decantando en {this.GetMetal()}");
         }
     }
 

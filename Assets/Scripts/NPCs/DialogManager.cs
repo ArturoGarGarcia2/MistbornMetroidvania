@@ -41,7 +41,11 @@ public class DialogManager : MonoBehaviour {
 
     }
 
-    public void StartDialog(List<string> frasesList, NPCData npcData){
+    public void StartDialog(List<string> frasesList, NPCData npcData, bool requireGold){
+        AloMetal amGol = playerScript.pd.GetAloMetalIfEquipped((int)Metal.GOLD);
+        if(requireGold && amGol != null && !amGol.IsBurning()){
+            return;
+        }
         if(!puedeHablar) return;
 
         frases.Clear();
@@ -97,6 +101,7 @@ public class DialogManager : MonoBehaviour {
 
     public void EndDialog(){
         StartCoroutine(CerrarDialogoConFade());
+        playerScript.inNPC = false;
         playerScript.ShowHUD();
     }
 
