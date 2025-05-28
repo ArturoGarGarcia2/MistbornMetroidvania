@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a37f9e78dd4dcd746a229da1f1b0b1b4
+guid: 17c732fe3c0327e4ab317a70839d804a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HUD_0
+      name: Bruma_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 256
-        width: 512
-        height: 128
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -111,20 +111,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3fc7c73589161c042a1af424eb57b3ff
-      internalID: -155086701
+      spriteID: e060a8f99158e3f4ab75ee8a7d811fd6
+      internalID: 2104830546
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HUD_1
+      name: Bruma_1
       rect:
         serializedVersion: 2
-        x: 512
-        y: 256
-        width: 512
-        height: 128
+        x: 64
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -132,20 +132,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 504f83b05d8eb4b418741efa2cdf8bf6
-      internalID: 1686611587
+      spriteID: 652d426e7b73364429b786a201581777
+      internalID: -244595829
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HUD_2
+      name: Bruma_2
       rect:
         serializedVersion: 2
-        x: 0
-        y: 128
-        width: 512
-        height: 128
+        x: 128
+        y: 64
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -153,41 +153,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2531ef36ba457134899d72860863bebd
-      internalID: 740602001
+      spriteID: 054c5418e18c119419637683841b878f
+      internalID: -588781005
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HUD_3
-      rect:
-        serializedVersion: 2
-        x: 512
-        y: 128
-        width: 512
-        height: 128
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f7ff743acc861ff40a2fad84ef304d35
-      internalID: 1859102857
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: HUD_4
+      name: Bruma_3
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 512
-        height: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -195,20 +174,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 09df55f8273bbf443a205e34e20aa283
-      internalID: -793586709
+      spriteID: e547118c4475a3f4da47a177e3fe5510
+      internalID: -1590653067
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HUD_5
+      name: Bruma_4
       rect:
         serializedVersion: 2
-        x: 512
+        x: 64
         y: 0
-        width: 512
-        height: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -216,8 +195,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 705292f4e1356f54bbf829ae845bc4cf
-      internalID: -2008640838
+      spriteID: 6e1abee1c5bc4e641b4ff40e1af7824e
+      internalID: 771301790
       vertices: []
       indices: 
       edges: []
@@ -233,12 +212,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      HUD_0: -155086701
-      HUD_1: 1686611587
-      HUD_2: 740602001
-      HUD_3: 1859102857
-      HUD_4: -793586709
-      HUD_5: -2008640838
+      Bruma_0: 2104830546
+      Bruma_1: -244595829
+      Bruma_2: -588781005
+      Bruma_3: -1590653067
+      Bruma_4: 771301790
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

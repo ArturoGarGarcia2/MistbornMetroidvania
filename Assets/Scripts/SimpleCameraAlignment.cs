@@ -48,7 +48,7 @@ public class SimpleCameraAlli : MonoBehaviour
         foreground_map_tilemap.SetTile(cellPosition, null);
 
         if (PlayerPrefs.GetInt("map_active") == 0){
-                MainCamera.transform.position = new Vector2(player.transform.position.x,player.transform.position.y+1000);
+                MainCamera.transform.position = new Vector2(player.transform.position.x,player.transform.position.y);
                 // MainCamera.transform.position = grid.GetCellCenterWorld(cellPosition);
                 noXY(cellPosition);
             // if (System.Array.Exists(sala1x1Tiles, tile => tile == currentTile)) //0

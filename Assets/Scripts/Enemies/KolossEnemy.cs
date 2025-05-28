@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class KolossEnemy : EnemyBase {
     protected override void Attack() {
-        Debug.Log($"{gameObject.name} hace un ataque brutal como Koloss.");
+        // Debug.Log($"{gameObject.name} hace un ataque brutal como Koloss.");
         base.Attack();
     }
 }

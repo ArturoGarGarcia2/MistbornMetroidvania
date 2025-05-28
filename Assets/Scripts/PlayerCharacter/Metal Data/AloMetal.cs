@@ -41,6 +41,13 @@ public class AloMetal{
         }
     }
 
+    public void RemoveAmount(int removeAmount){
+        amount-=removeAmount;
+        if(amount<0){
+            amount=0;
+        }
+    }
+
     public void Burn(){
         if(!burning)return;
         if(amount>0){

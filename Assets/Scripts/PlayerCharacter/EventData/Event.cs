@@ -15,7 +15,7 @@ public class Event{
         Dictionary<string,object> eventData = DatabaseManager.Instance.GetSingleRowFromQuery(
             $"SELECT * FROM event WHERE id = {id};"
         );
-
+        
         name = eventData["name"].ToString();
         string preType = eventData["type"].ToString();
         switch (preType){

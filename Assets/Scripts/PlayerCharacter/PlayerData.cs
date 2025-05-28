@@ -10,6 +10,7 @@ public class PlayerData{
     int maxHealth;
     int health;
     int checkpoint;
+    Vector3 checkpointPosition;
     int baseDamage;
     int damage;
     int vials;
@@ -19,6 +20,7 @@ public class PlayerData{
     string phase;
     int phaseTime;
     int coins;
+    int metalVialNum;
 
     float baseWeight;
     float weight;
@@ -76,10 +78,6 @@ public class PlayerData{
 
     public Sprite LoadSubSprite(string sheetPath, string subSpriteName) {
         Sprite[] sprites = Resources.LoadAll<Sprite>(sheetPath);
-        Debug.Log("Sprites encontrados: " + sprites.Length);
-        foreach (var sprite in sprites){
-            Debug.Log("Sprite: " + sprite.name);
-        }
         return sprites.FirstOrDefault(s => s.name == subSpriteName);
     }
 
@@ -95,14 +93,14 @@ public class PlayerData{
                 Metal metal = (Metal)(Convert.ToInt32(contentData["metal_id"]));
                 contents.Add(new MetalVialContent(metal,amount));
             }
-            LoadSubSprite("Sprites/Menu/Datos/MetalVial","MetalVial_1");
-            Debug.Log(LoadSubSprite("Sprites/Menu/Datos/MetalVial","MetalVial_1"));
             metalVials[i-1] = new MetalVial(
                 contents,
                 "Vial metálico",
                 "Usado desde hace mucho tiempo por los alománticos para recargar sus reservas",
+                i > metalVialNum,
                 LoadSubSprite("Sprites/Menu/Datos/MetalVial","MetalVial_0"),
                 LoadSubSprite("Sprites/Menu/Datos/MetalVial","MetalVial_1"),
+                LoadSubSprite("Sprites/Menu/Datos/MetalVial","MetalVial_2"),
                 this
             );
         }
@@ -112,39 +110,33 @@ public class PlayerData{
         }
         
         for(int slot = 1; slot <= inventorySlots.Length; slot++){
-            Debug.Log($"REVISANDO EL SLOT {slot} DEL INVENTARIO");
 
             int inventorySlotMetalVial = DatabaseManager.Instance.GetInt($"SELECT slot_vial FROM inventory WHERE file_id = {fileId} AND slot = {slot}");
             if(inventorySlotMetalVial != 0){
-                Debug.Log($"EL SLOT {slot} ERA UN VIAL METÁLICO");
                 inventorySlots[slot-1] = metalVials[inventorySlotMetalVial-1];
                 continue;
             }
             
             int inventorySlotLaudano = DatabaseManager.Instance.GetInt($"SELECT laudano FROM inventory WHERE file_id = {fileId} AND slot = {slot}");
             if(inventorySlotLaudano != 0){
-                Debug.Log($"EL SLOT {slot} ERA LÁUDANO");
                 inventorySlots[slot-1] = laudano;
                 continue;
             }
             
             int inventorySlotProj1 = DatabaseManager.Instance.GetInt($"SELECT proj_1 FROM inventory WHERE file_id = {fileId} AND slot = {slot}");
             if(inventorySlotProj1 != 0){
-                Debug.Log($"EL SLOT {slot} ERA FLECHA");
                 inventorySlots[slot-1] = projectiles[0];
                 continue;
             }
             
             int inventorySlotProj2 = DatabaseManager.Instance.GetInt($"SELECT proj_2 FROM inventory WHERE file_id = {fileId} AND slot = {slot}");
             if(inventorySlotProj2 != 0){
-                Debug.Log($"EL SLOT {slot} ERA MONEDA");
                 inventorySlots[slot-1] = projectiles[1];
                 continue;
             }
             
             int inventorySlotProj3 = DatabaseManager.Instance.GetInt($"SELECT proj_3 FROM inventory WHERE file_id = {fileId} AND slot = {slot}");
             if(inventorySlotProj3 != 0){
-                Debug.Log($"EL SLOT {slot} ERA PIEDRA");
                 inventorySlots[slot-1] = projectiles[2];
                 continue;
             }
@@ -188,7 +180,11 @@ public class PlayerData{
         baseParryWindow = .5f;
         parryWindow = baseParryWindow;
 
+
         checkpoint = Convert.ToInt32(fileData["checkpoint_id"]);
+        float posX = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT x_pos FROM checkpoint WHERE id = {checkpoint}"));
+        float posY = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT y_pos FROM checkpoint WHERE id = {checkpoint}"));
+        checkpointPosition = new Vector3(posX,posY,0);
         vials = Convert.ToInt32(fileData["vials"]);
         usedVials = 0;
         baseVialPower = Convert.ToInt32(fileData["vial_power"]);
@@ -196,6 +192,7 @@ public class PlayerData{
         phase = fileData["phase"].ToString();
         phaseTime = Convert.ToInt32(fileData["phase_time"]);
         coins = Convert.ToInt32(fileData["coins"]);
+        metalVialNum = Convert.ToInt32(fileData["metal_vials"]);
         laudano = new Laudano(
             Convert.ToInt32(fileData["laudano_bottles"]),
             "Láudano",
@@ -203,22 +200,25 @@ public class PlayerData{
             Resources.LoadAll<Sprite>("Sprites/UI_Elements/HUD/Vial")[0]
         );
         projectiles[0] = new Projectile(
-            Convert.ToInt32(fileData["projectile_1"]),
+            Convert.ToInt32(DatabaseManager.Instance.GetInt($"SELECT proj_1 FROM inventory WHERE file_id = {fileId} AND proj_1 != 0")),
             "Flecha",
             "Se lanza",
-            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[0]
+            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[0],
+            null
         );
         projectiles[1] = new Projectile(
-            Convert.ToInt32(fileData["projectile_2"]),
+            Convert.ToInt32(DatabaseManager.Instance.GetInt($"SELECT proj_2 FROM inventory WHERE file_id = {fileId} AND proj_2 != 0")),
             "Moneda",
             "Se lanza con acero",
-            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[1]
+            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[1],
+            null
         );
         projectiles[2] = new Projectile(
-            Convert.ToInt32(fileData["projectile_3"]),
+            Convert.ToInt32(DatabaseManager.Instance.GetInt($"SELECT proj_3 FROM inventory WHERE file_id = {fileId} AND proj_3 != 0")),
             "Piedra",
             "Se lanza y hace ruido",
-            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[2]
+            Resources.LoadAll<Sprite>("Sprites/Menu/Datos/Projectiles")[2],
+            null
         );
 
         eventNum = DatabaseManager.Instance.GetInt("SELECT COUNT(*) FROM event");
@@ -355,12 +355,21 @@ public class PlayerData{
         if(fm == null) return 0;
         return GetFeruMetalInSlot(slot).GetStatus();
     }
+
+    public void ModifyFeruReservesInInfinited(){
+        foreach(FeruMetal fm in feruMetals){
+            if(fm == null) return;
+            for(int i = 0; i < 3; i++){
+                fm.UseMetalmind();
+            }
+        }
+    }
     
     public void ExecuteFeruAndHemaUpdates(){
         weight = baseWeight;
         damage = baseDamage;
         vialPower = baseVialPower;
-        // weight = baseWeight;
+        weight = baseWeight;
         speed = baseSpeed;
         ITime = baseITime;
 
@@ -426,15 +435,16 @@ public class PlayerData{
                 break;
 
             case Metal.GOLD:
-                Debug.Log("FERUCHEMIC GOLD TODO");
+                maxHealth = (int)(GetFeruMetalIfEquipped((int)Metal.GOLD).IsStoring() ? baseMaxHealth/3 : baseMaxHealth);
+                health = health > maxHealth ? maxHealth : health;
                 break;
 
             case Metal.ELECTRUM:
-                Debug.Log("FERUCHEMIC ELECTRUM TODO");
+                // DONE
                 break;
 
             case Metal.CHROMIUM:
-                Debug.Log("FERUCHEMIC CHROMIUM TODO");
+                // DONE
                 break;
 
             case Metal.NICROSIL:
@@ -478,17 +488,8 @@ public class PlayerData{
         if(hm == null) return;
 
         switch(hm.GetMetal()){
-            // METALES QUE SE ACTIVAN CADA X TIEMPO
-            case Metal.IRON:
-                Debug.Log("HEMALURGIC IRON TODO");
-                break;
-
             case Metal.STEEL:
                 speed *= (IsHemaMetalEquipped((int)Metal.STEEL) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 2f : 1.5f : 1f);
-                break;
-
-            case Metal.TIN:
-                Debug.Log("HEMALURGIC TIN TODO");
                 break;
 
             case Metal.PEWTER:
@@ -504,14 +505,6 @@ public class PlayerData{
                 fireExitTime *= (IsHemaMetalEquipped((int)Metal.BRASS) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? .5f : .75f : 1f);
                 break;
 
-            case Metal.COPPER:
-                Debug.Log("HEMALURGIC COPPER TODO");
-                break;
-
-            case Metal.BRONZE:
-                // DONE
-                break;
-
             case Metal.CADMIUM:
                 breathCapacity += (IsHemaMetalEquipped((int)Metal.CADMIUM) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? baseBreathCapacity/2 : baseBreathCapacity/4 : 0);
                 break;
@@ -524,28 +517,16 @@ public class PlayerData{
                 HemaGoldHeal(hm);
                 break;
 
-            case Metal.CHROMIUM:
-                // DONE
-                break;
-
-            case Metal.NICROSIL:
-                // DONE
-                break;
-
             case Metal.ALUMINIUM:
                 foreach(AloMetal am in aloMetals){
                     if(am.IsBurning()) am.SetBurning(false);
                 }
                 break;
-
-            case Metal.DURALUMIN:
-                // Debug.Log("HEMALURGIC DURALUMIN WIP");
-                break;
-
-            case Metal.ATIUM:
-                // Debug.Log("HEMALURGIC ATIUM WIP");
-                break;
         }
+    }
+
+    public void Heal(){
+        health++;
     }
 
     public void HemaGoldHeal(HemaMetal hm){
@@ -560,14 +541,42 @@ public class PlayerData{
     public void Hurt(int hurtDamage){
         if(IsHemaMetalEquipped((int)Metal.ATIUM)){
             if(UnityEngine.Random.Range(1,101) < (IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 20 : 10)){
-                Debug.Log("No vea qué suertudo");
                 invulnerable = true;
                 return;
             }
         }
+        if(IsHemaMetalEquipped((int)Metal.ELECTRUM)){
+            if(UnityEngine.Random.Range(1,101) < (IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 20 : 10)){
+                return;
+            }
+        }
         if(!invulnerable){
+            int realHurt;
+
             AloMetal amPew = GetAloMetalIfEquipped((int)Metal.PEWTER);
-            health -= (amPew != null && amPew.IsBurning()) ? hurtDamage/4 : hurtDamage;
+            AloMetal amDur = GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+            FeruMetal fmEle = GetFeruMetalIfEquipped((int)Metal.ELECTRUM);
+
+            if(amPew != null && amPew.IsBurning()){
+                if(amDur != null && amDur.IsBurning()){
+                    realHurt = hurtDamage/4;
+                }else{
+                    realHurt = hurtDamage/2;
+                }
+            }else{
+                realHurt = hurtDamage;
+            }
+
+            if(fmEle != null){
+                if(fmEle.IsStoring()){
+                    if(UnityEngine.Random.Range(1,101) < 15){
+                        realHurt += hurtDamage;
+                    }
+                }else if(fmEle.IsTapping()){
+                    realHurt -= realHurt/2;
+                }
+            }
+            health -= realHurt;
             if(health <= 0){
                 alive = false;
             }
@@ -669,7 +678,6 @@ public class PlayerData{
         if (GetRemainingVials()>0){
             usedVials++;
             health+=vialPower;
-            Debug.Log($"Usado el UseVial {UnityEngine.Random.Range(1,101)}");
             if(health>maxHealth){
                 health=maxHealth;
             }
@@ -743,6 +751,11 @@ public class PlayerData{
         SaveEventData();
         SaveMetalVials();
         SaveInventory();
+
+        
+        float posX = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT x_pos FROM checkpoint WHERE id = {checkpoint}"));
+        float posY = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT y_pos FROM checkpoint WHERE id = {checkpoint}"));
+        checkpointPosition = new Vector3(posX,posY,0);
     }
 
     public void SaveAloMetals(){
@@ -858,7 +871,7 @@ public class PlayerData{
                 );
             }else if(consu is Projectile){
                 DatabaseManager.Instance.ExecuteNonQuery(
-                    $"UPDATE inventory SET slot_vial = 0, laudano = 0, proj_1 = {(consu.GetName() == "Flecha" ? 1 : 0)}, proj_2 = {(consu.GetName() == "Moneda" ? 1 : 0)}, proj_3 = {(consu.GetName() == "Piedra" ? 1 : 0)} WHERE file_id = {fileId} AND slot = {checkingSlot}"
+                    $"UPDATE inventory SET slot_vial = 0, laudano = 0, proj_1 = {(consu.GetName() == "Flecha" ? consu.GetStock() : 0)}, proj_2 = {(consu.GetName() == "Moneda" ? 1 : 0)}, proj_3 = {(consu.GetName() == "Piedra" ? consu.GetStock() : 0)} WHERE file_id = {fileId} AND slot = {checkingSlot}"
                 );
             }else{
 
@@ -884,7 +897,6 @@ public class PlayerData{
         if(GetFeruMetalIfEquipped((int)Metal.CHROMIUM) != null){
             a = a * (GetFeruMetalIfEquipped((int)Metal.CHROMIUM).IsStoring() ? .75f : GetFeruMetalIfEquipped((int)Metal.CHROMIUM).IsTapping() ? 1.25f : 1f);
         }
-
         if(GetHemaMetalIfEquipped((int)Metal.CHROMIUM) != null){
             a = a * (IsHemaMetalEquipped((int)Metal.CHROMIUM) ? IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 1.5f : 1.25f : 1f);
         }
@@ -900,7 +912,20 @@ public class PlayerData{
     public int GetMaxHealth() => maxHealth;
     public int GetHealth() => health;
     public int GetCheckPoint() => checkpoint;
-    public int GetDamage() => damage;
+    public int GetDamage(){
+        AloMetal amPew = GetAloMetalIfEquipped((int)Metal.PEWTER);
+        AloMetal amDur = GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+
+        if (amPew != null && amPew.IsBurning()){
+            if(amDur != null && amDur.IsBurning()){
+                return (int)(damage*3f);
+            }else{
+                return (int)(damage*1.5f);
+            }
+        }else{
+            return damage;
+        }
+    }
     public int GetVials() => vials;
     public int GetUsedVials() => usedVials;
     public int GetRemainingVials() => vials-usedVials;
@@ -947,6 +972,8 @@ public class PlayerData{
     public MetalVial GetMetalVialBySlot(int i) => metalVials[i-1];
     public RawMetal GetRawMetalByMetalId(int i) => rawMetals[i-1];
 
+    public Vector3 GetCheckpointPosition() => checkpointPosition;
+
 
     public void SetMaxHealth(int mh) => this.maxHealth=mh;
     public void SetHealth(int h) => this.health=h;
@@ -964,6 +991,21 @@ public class PlayerData{
     public void UnlockFeruMetal(int metalId) => unlockedFeruMetals[metalId-1] = 1;
     public void UnlockHemaMetal(int metalId) => unlockedHemaMetals[metalId-1] = 1;
 
+    public void UnlockMetalVial(){
+        metalVialNum+=1;
+        GetMetalVialBySlot(metalVialNum-1).roto = false;
+    }
+
+    public void BuySomething(int price){
+        if(coins-price >= 0)
+            coins-=price;
+    }
+
+    public void BuyRawMetal(int metalId, int addedAmount, int price){
+        rawMetals[metalId-1].amount += addedAmount;
+        coins -= price;
+    }
+
     public void AddRawMetalToMetalVial(int vialSlot, int metalId, int amount){
         metalVials[vialSlot].Add(new MetalVialContent((Metal)metalId,amount));
         SpendRawMetal(metalId,amount);
@@ -971,123 +1013,22 @@ public class PlayerData{
     public void SpendRawMetal(int metalId, int spentAmount) => rawMetals[metalId-1].amount -= spentAmount;
 
     public void ConsumeVial(List<MetalVialContent> content) {
-        Debug.Log($"CONSUME VIAL IN PD");
         foreach (MetalVialContent mvc in content) {
-            Debug.Log($"MIRANDO {mvc}");
             foreach (AloMetal am in aloMetals) {
-                Debug.Log($"¿SE AÑADE EN {am.GetMetal()}?");
                 if (am.GetMetal() == mvc.metal) {
-                    Debug.Log($"SE AÑADE");
                     am.Recharge(mvc.amount);
-                    Debug.Log($"AÑADIDO {mvc.amount}");
                     continue;
                 }
             }
         }
     }
 
+    public void SetProjectilePrefab(int projectile, GameObject pf){
+        projectiles[projectile].SetPrefab(pf);
+    }
+
     public override string ToString(){
         return $"PlayerData (File ID: {fileId}, Health: {health}/{maxHealth}, Damage: {damage}, Vials: {vials}, Vial Power: {vialPower}, Phase: {phase}, Phase Time: {phaseTime})";
-    }
-}
-
-[System.Serializable]
-public class MetalVial : Consumible {
-    private List<MetalVialContent> _content = new List<MetalVialContent>();
-    public List<MetalVialContent> content {
-        get => _content;
-        set {
-            _content = value;
-            UpdateDescription();
-        }
-    }
-
-    string name;
-    string description;
-    Sprite spriteLleno;
-    Sprite spriteVacio;
-    
-    PlayerData pd;
-
-    readonly string[] metales = {
-        "Hierro", "Acero", "Estaño", "Peltre", "Zinc", "Latón",
-        "Cobre", "Bronce", "Cadmio", "Bendaleo", "Oro", "Electro",
-        "Cromo", "Nicrosil", "Aluminio", "Duralumín", "Atium"
-    };
-
-    public MetalVial(List<MetalVialContent> c, string n, string d, Sprite spL, Sprite spV, PlayerData pdata){
-        name = n;
-        spriteLleno = spL;
-        spriteVacio = spV;
-
-        pd = pdata;
-
-        content = c;
-    }
-
-    private void UpdateDescription(){
-        List<string> partes = new List<string>();
-        foreach (MetalVialContent mvc in content){
-            partes.Add($"{metales[((int)mvc.metal) - 1]}: {mvc.amount}");
-        }
-        description = string.Join(", ", partes);
-    }
-
-    public void Add(MetalVialContent mvc){
-        content.Add(mvc);
-        UpdateDescription();
-    }
-
-    public override string ToString(){
-        string result = "Vial[";
-        foreach (MetalVialContent mvc in content){
-            result += mvc + ", ";
-        }
-        result += "]";
-        return result;
-    }
-
-    public void Consume(){
-        Debug.Log($"CONSUMIENDO UN VIAL");
-        pd.ConsumeVial(content);
-        Debug.Log($"AÑADIDO A PD");
-        content.Clear();
-        Debug.Log($"CONTENIDO LIMPIO");
-        UpdateDescription();
-        Debug.Log($"dESCRIPCIÓN ACTUALIZADA");
-    }
-
-    public string GetName() => name;
-
-    public string GetDescription() => description;
-
-    public Sprite GetSprite() => content.Count == 0 ? spriteVacio : spriteLleno;
-
-    public bool EqualsConsumible(Consumible other){
-        if (other is not MetalVial otherVial) return false;
-        if (content.Count != otherVial.content.Count) return false;
-
-        for (int i = 0; i < content.Count; i++){
-            if (content[i].metal != otherVial.content[i].metal || content[i].amount != otherVial.content[i].amount)
-                return false;
-        }
-
-        return true;
-    }
-}
-
-[System.Serializable]
-public class MetalVialContent {
-    public Metal metal;
-    public int amount;
-
-    public MetalVialContent(Metal m, int a){
-        metal = m;
-        amount = a;
-    }
-
-    public override string ToString(){
-        return $"({metal}-{amount})";
     }
 }
 

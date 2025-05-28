@@ -3,44 +3,67 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour, Consumible{
-    
     int stock;
     string name;
     string description;
     Sprite sprite;
+    GameObject projectilePrefab;
 
     PlayerScript playerScript;
-    PlayerData pd;
 
-    public Projectile(int s, string n, string d, Sprite sp){
+    public Projectile(int s, string n, string d, Sprite sp, GameObject prefab){
         stock = s;
         name = n;
         description = d;
         sprite = sp;
+        projectilePrefab = prefab;
 
-        playerScript = FindObjectOfType<PlayerScript>();
-        pd = playerScript.pd;
+        playerScript = GameObject.FindObjectOfType<PlayerScript>();
+    }
+
+    public void SetPrefab(GameObject pf){
+        projectilePrefab = pf;
     }
 
     public void Consume(){
-    }
-    public string GetName(){
-        return name;
-    }
-    public string GetDescription(){
-        return description;
-    }
-    public Sprite GetSprite(){
-        return sprite;
-    }
+        Debug.Log($"DISPARANDO {name} ({stock})");
+        if (stock <= 0) return;
+        if(name == "Moneda"){
+            AloMetal amSte = playerScript.pd.GetAloMetalIfEquipped((int)Metal.STEEL);
+            if(playerScript.pd.GetCoins()>=1 && amSte != null && amSte.IsBurning()){
+                GameObject newProj = GameObject.Instantiate(
+                    projectilePrefab,
+                    playerScript.transform.position,
+                    playerScript.transform.rotation
+                );
 
-    public bool EqualsConsumible(Consumible other){
-        if (other is not Projectile otherVial) return false;
+                ProjectileBehaviour behaviour = newProj.GetComponent<ProjectileBehaviour>();
+                behaviour.SetDirection(playerScript.facingRight ? Vector2.right : Vector2.left);
 
-        if (stock != otherVial.stock || name != otherVial.name){
-            return false;
+                playerScript.pd.BuySomething(1);
+            }
+        }else{
+            GameObject newProj = GameObject.Instantiate(
+                projectilePrefab,
+                playerScript.transform.position,
+                playerScript.transform.rotation
+            );
+
+            ProjectileBehaviour behaviour = newProj.GetComponent<ProjectileBehaviour>();
+            behaviour.SetDirection(playerScript.facingRight ? Vector2.right : Vector2.left);
+
+            stock--;
         }
 
-        return true;
+    }
+
+    public string GetName() => name;
+    public string GetDescription() => description;
+    public int GetStock() => stock;
+    public Sprite GetSprite() => sprite;
+
+    public bool EqualsConsumible(Consumible other){
+        if (other is not Projectile otherItem) return false;
+        return name == otherItem.name && stock == otherItem.stock;
     }
 }
