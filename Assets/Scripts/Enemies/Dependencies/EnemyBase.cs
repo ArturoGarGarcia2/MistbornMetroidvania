@@ -3,18 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class EnemyBase : MonoBehaviour
-{
+public abstract class EnemyBase : MonoBehaviour{
     public int baseDamage = 10;
-    public float attackRange = 2f;
+    public int damage;
+
+    public float baseAttackRange = 2f;
+    public float attackRange;
+
     public float attackCooldown = 1.5f;
     public float attackDelay = .5f;
+
     protected float lastAttackTime;
     public float baseMoveSpeed = 7f;
     public float moveSpeed;
     public int baseHealth = 10;
     public int health;
-    public bool hurted = false;
+    public bool physicalHurted = false;
     public bool invulnerable = false;
 
     bool inCadBubble = false;
@@ -29,16 +33,29 @@ public abstract class EnemyBase : MonoBehaviour
     
     CadmiumBendalloyManager CyBManager;
 
-    PlayerScript playerScript;
+    protected PlayerScript playerScript;
     public PlayerData pd;
-
-    // public Queue<EnemyShadowFrame> shadowFrames = new Queue<EnemyShadowFrame>();
-    // public float recordInterval = 0.05f; // 20 fps
-    // private float recordTimer = 0f;
+    
+    public GameObject mentalIndicator;
+    public float mentalIndicatorsRange = 20f;
 
     public bool isAttacking;
+    public bool selected;
+    public bool inflamed;
+    public bool dampened;
+    public bool canMentalInterfiere = true;
+    public bool duralumined = false;
+
+    private Coroutine inflamedRoutine;
+    private Coroutine dampenedRoutine;
 
     protected virtual void Start(){
+        if (player == null){
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null){
+                player = playerObj.transform;
+            }
+        }
         CyBManager = FindObjectOfType<CadmiumBendalloyManager>();
 
         playerScript = FindObjectOfType<PlayerScript>();
@@ -46,33 +63,37 @@ public abstract class EnemyBase : MonoBehaviour
         player = GameObject.FindWithTag("Player")?.transform;
 
         moveSpeed = baseMoveSpeed;
+        attackRange = baseAttackRange;
         health = baseHealth;
     }
 
     protected virtual void Update(){
+        moveSpeed = baseMoveSpeed;
+        damage = baseDamage;
+        
         CheckBubbles();
+        CheckMentalStates();
 
         if(CyBManager.slowedDownTime && !inBenBubble){
             moveSpeed = baseMoveSpeed * .1f;
+            attackRange = baseAttackRange * 1f;
+
         }else if(CyBManager.speededUpTime && !inCadBubble){
             moveSpeed = baseMoveSpeed * 10f;
+            attackRange = baseAttackRange * 1f;
+
         }else if(CyBManager.stoppedTime){
             moveSpeed = baseMoveSpeed * 0f;
+            attackRange = baseAttackRange * 0f;
+
         }else if(CyBManager.infinitedTime){
             moveSpeed = baseMoveSpeed * 100f;
+            attackRange = baseAttackRange * 1f;
+
         }else{
             moveSpeed = baseMoveSpeed;
+            attackRange = baseAttackRange * 1f;
         }
-
-        // AloMetal amAti = playerScript.pd.GetAloMetalIfEquipped((int)Metal.ATIUM);
-        // if (amAti != null && amAti.IsBurning()) {
-        //     recordTimer += Time.deltaTime;
-        //     if (recordTimer >= recordInterval) {
-        //         recordTimer = 0f;
-        //         shadowFrames.Enqueue(new EnemyShadowFrame(transform.position, transform.rotation, isAttacking));
-        //         if (shadowFrames.Count > 1000) shadowFrames.Dequeue();
-        //     }
-        // }
 
         HemaMetal hm = playerScript.pd.GetHemaMetalIfEquipped((int)Metal.BRONZE);
         if (hm != null){
@@ -84,6 +105,65 @@ public abstract class EnemyBase : MonoBehaviour
         }else{
             lifeBack.gameObject.SetActive(false);
             lifeFill.gameObject.SetActive(false);
+        }
+
+        AloMetal amZin = pd.GetAloMetalIfEquipped((int)Metal.ZINC);
+        AloMetal amBra = pd.GetAloMetalIfEquipped((int)Metal.BRASS);
+
+        if(
+            (amZin != null && amZin.IsBurning()) ||
+            (amBra != null && amBra.IsBurning())
+        ){
+            ShowMentalIndicator();
+        }else{
+            mentalIndicator.gameObject.SetActive(false);
+            if(playerScript.nearMetalObjects.Contains(gameObject)){
+                playerScript.nearMetalObjects.Remove(gameObject);
+            }
+        }
+
+    }
+
+    protected void CheckMentalStates(){
+        if (inflamed && inflamedRoutine == null){
+            inflamedRoutine = StartCoroutine(HandleMentalState(() => inflamed, val => inflamed = val, "Inflamed"));
+        }
+
+        if (dampened && dampenedRoutine == null){
+            dampenedRoutine = StartCoroutine(HandleMentalState(() => dampened, val => dampened = val, "Dampened"));
+        }
+    }
+    private IEnumerator HandleMentalState(System.Func<bool> getState, System.Action<bool> setState, string label){
+        canMentalInterfiere = false;
+        yield return new WaitForSeconds(duralumined ? 20f : 10f);
+        setState(false);
+
+        yield return new WaitForSeconds(10f);
+        canMentalInterfiere = true;
+        duralumined = true;
+
+        if(label == "Inflamed") inflamedRoutine = null;
+        if(label == "Dampened") dampenedRoutine = null;
+    }
+    void ShowMentalIndicator(){
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        if(selected){
+            mentalIndicator.GetComponent<SpriteRenderer>().color = Color.yellow;
+        }else{
+            mentalIndicator.GetComponent<SpriteRenderer>().color = Color.white;
+        }
+
+        if (distanceToPlayer < mentalIndicatorsRange){
+            mentalIndicator.gameObject.SetActive(true);
+            if(!playerScript.nearEmotionObjects.Contains(gameObject)){
+                playerScript.nearEmotionObjects.Add(gameObject);
+            }
+        }else{
+            mentalIndicator.gameObject.SetActive(false);
+            if(playerScript.nearEmotionObjects.Contains(gameObject)){
+                playerScript.nearEmotionObjects.Remove(gameObject);
+            }
         }
     }
 

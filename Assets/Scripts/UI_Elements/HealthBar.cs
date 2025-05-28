@@ -6,18 +6,23 @@ using UnityEngine.UI;
 public class HealthBar : MonoBehaviour{
     public Image healthFill;
     public Image healthEase;
-    public float currentHealth;
+    public float currentHealth = 0f;
     public float maxHealth;
-    private float lerpSpeed = 0.01f;
+    private float lerpSpeed = 0.02f;
     public Image[] viales;
     public Sprite[] vialesSprites;
     PlayerScript playerScript;
     public Dictionary<int, int> vialesVida = new Dictionary<int, int>();
 
     string faseActual;
-    public Sprite[] fasesLocuraSprites;
+    public Sprite[] healthBars;
+    public Sprite[] feruGoldHealthBars;
+    public Sprite[] brumas;
     public Image healthBar;
+    public Image brumasImage;
     PlayerData pd;
+
+    int maxMaxHealth = 120;
 
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
@@ -25,8 +30,6 @@ public class HealthBar : MonoBehaviour{
             Debug.LogError("No se encontró el PlayerScript en la escena.");
             return;
         }
-        maxHealth = (float)DatabaseManager.Instance.GetInt("SELECT max_health FROM file WHERE id = 1;");
-        currentHealth = PlayerPrefs.GetInt("Health");
     }
 
     void Update(){
@@ -50,8 +53,15 @@ public class HealthBar : MonoBehaviour{
 
         maxHealth = (float)pd.GetMaxHealth();
         currentHealth = (float)pd.GetHealth();
+        
+        FeruMetal fmGol = pd.GetFeruMetalIfEquipped((int)Metal.GOLD);
+        if(fmGol != null && fmGol.IsStoring()){
+            PutFeruGoldHealthBar();
+        }else{
+            PutHealthBar();
+        }
 
-        float fillAmount = currentHealth / maxHealth;
+        float fillAmount = currentHealth / maxMaxHealth;
 
         if (healthFill != null)
             healthFill.fillAmount = fillAmount;
@@ -62,36 +72,78 @@ public class HealthBar : MonoBehaviour{
         switch(faseActual){
             case "silencio":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[0];
+                brumasImage.color = new Color(0f,0f,0f,0f);
                 break;
             case "murmullos":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[1];
+                brumasImage.color = Color.white;
+                brumasImage.sprite = brumas[0];
                 break;
             case "ojos":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[2];
+                brumasImage.color = Color.white;
+                brumasImage.sprite = brumas[1];
                 break;
             case "mundo":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[3];
+                brumasImage.color = Color.white;
+                brumasImage.sprite = brumas[2];
                 break;
             case "dominio":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[4];
+                brumasImage.color = Color.white;
+                brumasImage.sprite = brumas[3];
                 break;
             case "extasis":
                 healthBar.color = Color.white;
-                healthBar.sprite = fasesLocuraSprites[5];
+                brumasImage.color = Color.white;
+                brumasImage.sprite = brumas[4];
                 break;
             case "declive":
-                healthBar.color = Color.white;
-                healthBar.color = Color.red;
-                healthBar.sprite = fasesLocuraSprites[5];
+                brumasImage.color = Color.black;
+                brumasImage.sprite = brumas[5];
                 break;
             default:
-                healthBar.color = Color.green;
-                healthBar.sprite = fasesLocuraSprites[0];
+                brumasImage.color = Color.green;
+                brumasImage.sprite = brumas[0];
+                break;
+        }
+    }
+
+    void PutHealthBar(){
+        switch(pd.GetMaxHealth()){
+            case 30:
+                healthBar.sprite = healthBars[0];
+                break;
+            case 60:
+                healthBar.sprite = healthBars[1];
+                break;
+            case 90:
+                healthBar.sprite = healthBars[2];
+                break;
+            case 120:
+                healthBar.sprite = healthBars[3];
+                break;
+            default:
+                break;
+        }
+    }
+
+    void PutFeruGoldHealthBar(){
+        switch(pd.GetMaxHealth()){
+            case 10:
+                healthBar.sprite = feruGoldHealthBars[0];
+                break;
+            case 20:
+                healthBar.sprite = feruGoldHealthBars[1];
+                break;
+            case 30:
+                healthBar.sprite = feruGoldHealthBars[2];
+                break;
+            case 40:
+                healthBar.sprite = feruGoldHealthBars[3];
+                break;
+            default:
                 break;
         }
     }

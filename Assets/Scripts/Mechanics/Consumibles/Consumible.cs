@@ -6,6 +6,7 @@ public interface Consumible{
     void Consume();
     string GetName();
     string GetDescription();
+    int GetStock();
     Sprite GetSprite();
     
     bool EqualsConsumible(Consumible other);

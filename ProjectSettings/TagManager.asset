@@ -16,6 +16,8 @@ TagManager:
   - CadmiumBubble
   - BendalloyBubble
   - GoldEcho
+  - BuyingSpot
+  - Enemy
   layers:
   - Default
   - TransparentFX

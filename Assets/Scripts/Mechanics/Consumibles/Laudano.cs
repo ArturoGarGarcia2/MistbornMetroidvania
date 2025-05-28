@@ -51,6 +51,7 @@ public class Laudano : MonoBehaviour, Consumible {
 
     public string GetName() => name;
     public string GetDescription() => description;
+    public int GetStock() => Stock;
     public Sprite GetSprite() => sprite;
 
     public bool EqualsConsumible(Consumible other) {

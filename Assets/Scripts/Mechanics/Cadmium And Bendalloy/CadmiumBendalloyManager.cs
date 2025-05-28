@@ -20,6 +20,9 @@ public class CadmiumBendalloyManager : MonoBehaviour
     public bool infinitedTime;
     public bool stoppedTime;
 
+    private Coroutine infiniteTimeCoroutine;
+    private bool infiniteTimeCoroutineRunning = false;
+
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
     }
@@ -39,16 +42,30 @@ public class CadmiumBendalloyManager : MonoBehaviour
                     CadmiumBubble.transform.position = player.position;
                     SetEverythingFalse();
                     infinitedTime = true;
+
+                    if (!infiniteTimeCoroutineRunning){
+                        infiniteTimeCoroutine = StartCoroutine(InfinitedTimeCoroutine());
+                    }
                 }else{
                     // QUEMANDO CADMIO EL TIEMPO SE ACELERA Y SE CREA LA BURBUJA
                     CadmiumBubble.SetActive(true);
                     inCadBubble = true;
                     SetEverythingFalse();
                     speededUpTime = true;
+
+                    if (infiniteTimeCoroutineRunning){
+                        StopCoroutine(infiniteTimeCoroutine);
+                        infiniteTimeCoroutineRunning = false;
+                    }
+
                 }
             }else{
                 CadmiumBubble.SetActive(false);
                 CadmiumBubble.transform.position = player.position;
+                if (infiniteTimeCoroutineRunning){
+                    StopCoroutine(infiniteTimeCoroutine);
+                    infiniteTimeCoroutineRunning = false;
+                }
             }
 
             if (amBen != null && amBen.IsBurning()){
@@ -80,8 +97,30 @@ public class CadmiumBendalloyManager : MonoBehaviour
             BendalloyBubble.SetActive(false);
             BendalloyBubble.transform.position = player.position;
             SetEverythingFalse();
+            if (infiniteTimeCoroutineRunning){
+                StopCoroutine(infiniteTimeCoroutine);
+                infiniteTimeCoroutineRunning = false;
+            }
         }
     }
+
+    IEnumerator InfinitedTimeCoroutine(){
+        infiniteTimeCoroutineRunning = true;
+
+        while (true){
+            AloMetal amCad = pd.GetAloMetalIfEquipped((int)Metal.CADMIUM);
+            AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+
+            if (amCad == null || !amCad.IsBurning() || amDur == null || !amDur.IsBurning()){
+                infiniteTimeCoroutineRunning = false;
+                yield break;
+            }
+
+            pd.ModifyFeruReservesInInfinited();
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
 
     void SetEverythingFalse(){
         speededUpTime = false;

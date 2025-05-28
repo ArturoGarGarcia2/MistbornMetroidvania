@@ -183,6 +183,7 @@ public class PlayerScript : MonoBehaviour{
     ParryManager parryManager;
     CadmiumBendalloyManager CyBManager;
     UnlockingManager unlockingManager;
+    ShopManager shopManager;
 
     public bool nearAnyNPC = false;
     public GameObject nearNPC = null;
@@ -191,8 +192,16 @@ public class PlayerScript : MonoBehaviour{
 
     public PlayerData pd;
 
+    public GameObject flechaProjectile;
+    public GameObject monedaProjectile;
+    public GameObject piedraProjectile;
+
     void Start(){
         pd = new PlayerData(1);
+
+        pd.SetProjectilePrefab(0,flechaProjectile);
+        pd.SetProjectilePrefab(1,monedaProjectile);
+        pd.SetProjectilePrefab(2,piedraProjectile);
 
         cvMetalWheel.SetActive(false);
         cvConsumibleWheel.SetActive(false);
@@ -206,33 +215,15 @@ public class PlayerScript : MonoBehaviour{
         parryManager = FindObjectOfType<ParryManager>();
         CyBManager = FindObjectOfType<CadmiumBendalloyManager>();
         unlockingManager = FindObjectOfType<UnlockingManager>();
+        shopManager = FindObjectOfType<ShopManager>();
 
-        transform.position = GetPuntoControlDesdeDB();
+        Vector3 checkpointPosition = pd.GetCheckpointPosition();
+        transform.position = checkpointPosition;
+        checkpointPosition.z = camera.position.z;
+        // checkpointPosition.y += 3;
+        camera.position = checkpointPosition;
         StartCoroutine(UpdateAmountEveryHalfSecond());
         StartCoroutine(UpdateAloMetals());
-    }
-
-
-    public Vector3 GetPuntoControlDesdeDB(){
-        Vector3 posicion = Vector3.zero;
-
-        int lastCheckpoint = DatabaseManager.Instance.GetInt($"SELECT checkpoint_id FROM file WHERE id = 1;");
-
-        string queryX = $"SELECT x_pos FROM checkpoint WHERE id = {lastCheckpoint}";
-        object resultadoX = DatabaseManager.Instance.ExecuteScalar(queryX);
-        string queryY = $"SELECT y_pos FROM checkpoint WHERE id = {lastCheckpoint}";
-        object resultadoY = DatabaseManager.Instance.ExecuteScalar(queryY);
-
-        if (resultadoX == null || resultadoY == null){
-            Debug.LogError("No se pudo recuperar la posición del punto de control desde la base de datos.");
-        }else{
-            float posX = Convert.ToSingle(resultadoX);
-            float posY = Convert.ToSingle(resultadoY);
-
-            posicion = new Vector3(posX, posY, 0);
-        }
-
-        return posicion;
     }
 
     public void OnFeruUp(InputAction.CallbackContext context){
@@ -273,6 +264,10 @@ public class PlayerScript : MonoBehaviour{
                     }
                 }
             }
+            FeruMetal fmGol = pd.GetFeruMetalIfEquipped((int)Metal.GOLD);
+            if(fmGol != null && fmGol.IsTapping()){
+                pd.Heal();
+            }
             yield return new WaitForSeconds(0.5f);
         }
     }
@@ -286,7 +281,7 @@ public class PlayerScript : MonoBehaviour{
                         if(am.GetMetal() != Metal.ALUMINIUM){
                             am.AluminiumBurn();
                         }else{
-                            pd.GetAloMetalInSlot(i)?.Burn(100);
+                            pd.GetAloMetalInSlot(i)?.Burn(10);
                         }
                     }
                 }else{
@@ -310,7 +305,7 @@ public class PlayerScript : MonoBehaviour{
             }else if(hmNic != null){
                 multNic *= 1.2f;
             }
-            float waitTime = ((amDur != null && amDur.IsBurning()) ? .2f : 1f) * multNic;
+            float waitTime = (((amDur != null && amDur.IsBurning()) || (amAlu != null && amAlu.IsBurning())) ? .2f : 1f) * multNic;
             yield return new WaitForSeconds(waitTime);
         }
     }
@@ -464,6 +459,7 @@ public class PlayerScript : MonoBehaviour{
         SetObjective();
 
         TurnOffUnusedAloMetal();
+        InUpdate();
     }
 
     private void SetMetalWheel(){
@@ -576,7 +572,6 @@ public class PlayerScript : MonoBehaviour{
             } else {
                 // Slot con consumible
                 Sprite sprite = cons.GetSprite();
-                Debug.Log($"[ConsumibleWheel] Slot {i} - Sprite: {sprite?.name}");
 
                 slotsConsumibleWheel[i].sprite = sprite;
                 slotsConsumibleWheelMenu[i].sprite = sprite;
@@ -681,20 +676,45 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnMove(InputAction.CallbackContext context){
-        if(selectingMetal){
-            // movementInput.x = 0;
-            // movementInput.y = 0;
+        if(selectingMetal || pressingQ){
             return;
         }
-        if(pressingQ){
+        if(tping){
+            movementInput.x = 0;
+            movementInput.y = 0;
             return;
         }
         movementInput = context.ReadValue<Vector2>();
     }
+
+    public void GetHurt(int damage){
+        pd.Hurt(damage);
+        float thrust = 10f * (facingRight ? -1f : 1f);
+        FeruMetal fmIro = pd.GetFeruMetalIfEquipped((int)Metal.IRON);
+        HemaMetal hmIro = pd.GetHemaMetalIfEquipped((int)Metal.IRON);
+        HemaMetal hmDur = pd.GetHemaMetalIfEquipped((int)Metal.DURALUMIN);
+        if(fmIro != null){
+            if(fmIro.IsStoring()){
+                thrust*=1.3f;
+            }else if(fmIro.IsTapping()){
+                thrust*=.7f;
+            }
+        }
+        if(hmIro != null){
+            if(hmDur != null){
+                thrust*=.4f;
+            }else{
+                thrust*=.8f;
+            }
+        }
+        short_term_thrust = thrust;
+        // Vector2 pushDirection = new Vector2(thrust, 0f);
+        // playerScript.GetRB().AddForce(pushDirection, ForceMode2D.Impulse);
+    }
     void Move(){
         if(inNPC) return;
         if(pressingQ)return;
-        rb.velocity = new Vector2(short_term_thrust*2 + movementInput.x * pd.GetSpeed() * 1, rb.velocity.y);
+        rb.velocity = new Vector2(short_term_thrust*2 + movementInput.x * pd.GetSpeed() * 1, rb.velocity.y+(short_term_thrust != 0 ? .1f : 0f));
 
         if(Mathf.Abs(movementInput.x)>0.01f){
             playerAnimator.SetBool("Running",true);
@@ -725,10 +745,9 @@ public class PlayerScript : MonoBehaviour{
         if (context.started && !pauseManager.isPaused) {
             if (grounded){
                 jumped = true;
-            } else if (coins > 0){  // Solo permite saltar si hay monedas disponibles
+            } else if (coins > 0){
                 doubleJumped = true;
-                coins--;  // Resta una moneda de la variable local
-                PlayerPrefs.SetInt("Coins", coins);  // Guarda el nuevo valor en PlayerPrefs
+                coins--;
             }
         }
     }
@@ -808,8 +827,17 @@ public class PlayerScript : MonoBehaviour{
             }
             speed = 0;
         }
+        if (nearShop && interacting){
+            inShop = true;
+            var gotShop = shop.GetComponent<BuyingSpot>();
+            if (gotShop != null){
+                // Debug.Log($"VÁMONOS DE COMPRASSS {shop}");
+                // Debug.Log($"VÁMONOS DE COMPRASSS {gotShop}");
+                shopManager.OpenPanel(gotShop.buyingThing);
+            }
+            speed = 0;
+        }
         if (interacting && inFuente) {
-            // pd.SaveToDatabase();
             pd.EnterFuente();
             burned = false;
             inFireTime = 0f;
@@ -856,25 +884,6 @@ public class PlayerScript : MonoBehaviour{
             rb.gravityScale = 2;
             rb.velocity = new Vector2(movementInput.x * speed , 0);
         }
-    }
-
-    void Hurt(int damage) {
-        if (!isInvulnerable) {
-            RestarVida(damage);
-
-            if (actual_lifes <= 0){
-                dead = true;
-                sr.color = Color.white;
-                playerAnimator.SetTrigger("DeadTrigger");
-            }else{
-                StartCoroutine(Invulnerability());
-            }
-        }
-    }
-
-    void RestarVida(int damage){
-        pd.Hurt(damage);
-        sr.color = Color.red;
     }
 
     IEnumerator Invulnerability() {
@@ -968,25 +977,11 @@ public class PlayerScript : MonoBehaviour{
         }
     }
 
-
+    bool nearShop;
+    bool inShop;
+    GameObject shop;
 
     void OnTriggerEnter2D(Collider2D other){
-
-        // Debug.Log($"other.tag: {other.tag}");
-
-        // if (other.tag == "Enemy_Attack" && !dead){
-        //     Debug.Log("other: " + other.transform.parent);
-
-        //     IAttacker attacker = other.GetComponentInParent<IAttacker>();
-
-        //     if (attacker != null){
-        //         int damage = attacker.GetDamage();
-        //         Debug.Log("Damage taken: " + damage);
-        //         Hurt(damage);
-        //     }else{
-        //         Debug.LogWarning("El objeto atacante no implementa IAttacker.");
-        //     }
-        // }
 
         if (other.tag == "Fuente" && !dead) {
             inFuente = true;
@@ -1012,6 +1007,12 @@ public class PlayerScript : MonoBehaviour{
             }
         }
 
+        if (other.CompareTag("BuyingSpot")){
+            nearShop = true;
+            shop = other.gameObject;
+            Debug.Log("EN UNA TIENDITA");
+        }
+
         if (other.tag == "Instant_Death"){
             actual_lifes = 0;
             dead = true;
@@ -1030,6 +1031,11 @@ public class PlayerScript : MonoBehaviour{
             nearAnyNPC = false;
             nearNPC = null;
             inNPC = false;
+        }
+        if (other.CompareTag("BuyingSpot")){
+            nearShop = false;
+            shop = null;
+            inShop = false;
         }
 
         if (other.CompareTag("ToxicMist")){
@@ -1123,7 +1129,7 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnQRight(InputAction.CallbackContext context){
-        if(pressingQ && nearMetalObjects.Count > 0 && canSelectObjective){
+        if(pressingQ && nearMetalObjects.Count > 0 || nearEmotionObjects.Count > 0 && canSelectObjective){
 
             selectedMetalObjective++;
             selectedEmotionObjective++;
@@ -1140,7 +1146,7 @@ public class PlayerScript : MonoBehaviour{
         }
     }
     public void OnQLeft(InputAction.CallbackContext context){
-        if(pressingQ && nearMetalObjects.Count > 0 && canSelectObjective){
+        if(pressingQ && nearMetalObjects.Count > 0 || nearEmotionObjects.Count > 0 && canSelectObjective){
 
             selectedMetalObjective--;
             selectedEmotionObjective--;
@@ -1169,6 +1175,9 @@ public class PlayerScript : MonoBehaviour{
         if(selectedMetalObjective > nearMetalObjects.Count-1){
             selectedMetalObjective = nearMetalObjects.Count-1;
         }
+        if(selectedEmotionObjective > nearEmotionObjects.Count-1){
+            selectedEmotionObjective = nearEmotionObjects.Count-1;
+        }
 
         int pos = 0;
         foreach(GameObject gm in nearMetalObjects){
@@ -1180,6 +1189,49 @@ public class PlayerScript : MonoBehaviour{
                 mo.selected = false;
             }
             pos++;
+        }
+        int mentalPos = 0;
+        foreach(GameObject gm in nearEmotionObjects){
+            EnemyBase mo = gm.GetComponent<EnemyBase>();
+            
+            if(mentalPos == selectedEmotionObjective){
+                mo.selected = true;
+            }else{
+                mo.selected = false;
+            }
+            mentalPos++;
+        }
+    }
+
+    void InUpdate(){
+        // Debug.Log($"nearEmotionObjects.Count: {nearEmotionObjects.Count}");
+    }
+
+    public void OnPushingEmotion(InputAction.CallbackContext context){
+        AloMetal amBra = pd.GetAloMetalIfEquipped((int)Metal.BRASS);
+        AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+        if(pressingQ && context.started && amBra != null && amBra.IsBurning()){
+            Debug.Log("Pulsando: PUSHING EMOTION");
+            EnemyBase target = nearEmotionObjects[selectedEmotionObjective].GetComponent<EnemyBase>();
+            if(target == null) return;
+            if(!target.canMentalInterfiere) return;
+            target.dampened = true;
+            if(amDur != null && amDur.IsBurning()){
+                target.duralumined = true;
+            }
+        }
+    }
+    public void OnPullingEmotion(InputAction.CallbackContext context){
+        AloMetal amZin = pd.GetAloMetalIfEquipped((int)Metal.ZINC);
+        AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+        if(pressingQ && context.started && amZin != null && amZin.IsBurning()){
+            EnemyBase target = nearEmotionObjects[selectedEmotionObjective].GetComponent<EnemyBase>();
+            if(target == null) return;
+            if(!target.canMentalInterfiere) return;
+            target.inflamed = true;
+            if(amDur != null && amDur.IsBurning()){
+                target.duralumined = true;
+            }
         }
     }
 
@@ -1214,31 +1266,27 @@ public class PlayerScript : MonoBehaviour{
 
     IEnumerator ApplyForceContinuously(int directionMultiplier){
         while (pressingQ){
-            if (nearMetalObjects.Count == 0) yield break; // Si no hay objetos cercanos, salir inmediatamente.
+            if (nearMetalObjects.Count == 0) yield break;
 
-            // Asegurar que el índice no esté fuera de rango.
             if (selectedMetalObjective < 0 || selectedMetalObjective >= nearMetalObjects.Count){
                 selectedMetalObjective = Mathf.Clamp(selectedMetalObjective, 0, nearMetalObjects.Count - 1);
             }
 
             GameObject target = nearMetalObjects[selectedMetalObjective];
-            if (target == null) yield break; // Si el objetivo es nulo, salimos.
+            if (target == null) yield break;
 
-            // Calcular dirección
             Vector2 direction = ((Vector2)target.transform.position - rb.position).normalized;
 
             float thrust = directionMultiplier * 1f;
             AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
             if (amDur != null && amDur.IsBurning()){
-                thrust *= 3f; // Aumentamos la fuerza si Duralumín está siendo quemado.
+                thrust *= 3f; 
             }
 
             Vector2 force = direction * thrust;
 
-            // Aplicar fuerza al jugador
             rb.AddForce(force, ForceMode2D.Impulse);
 
-            // Aplicar fuerza opuesta al objeto si tiene Rigidbody2D
             Rigidbody2D targetRb = target.GetComponent<Rigidbody2D>();
             if (targetRb != null && !targetRb.isKinematic){
                 targetRb.AddForce(-force, ForceMode2D.Impulse);
@@ -1248,22 +1296,58 @@ public class PlayerScript : MonoBehaviour{
         }
     }
 
-
-    public void OnPushingEmotion(InputAction.CallbackContext context){
-        if(pressingQ && context.started){
-            // Debug.Log("Pulsando: PUSHING EMOTION");
-        }
-    }
-    public void OnPullingEmotion(InputAction.CallbackContext context){
-        if(pressingQ && context.started){
-            // Debug.Log("Pulsando: PULLING EMOTION");
-        }
-    }
-
     public void OnParry(InputAction.CallbackContext context){
         if(context.started){
             locuraManager.ConsumeLaudano();
             parryManager.TryParry();
+        }
+    }
+
+    public Rigidbody2D GetRB() => rb;
+
+
+
+    public Image fadingPanel;
+    public Transform camera;
+    public bool tping = false;
+
+    public void StartTP(Transform target, Transform cameraTarget) {
+        StartCoroutine(HandleFadeAndTP(target, cameraTarget));
+    }
+
+    private IEnumerator HandleFadeAndTP(Transform target, Transform cameraTarget) {
+        tping = true;
+        yield return StartCoroutine(FadeOut());
+
+        // Teletransportar jugador y cámara
+        transform.position = target.position;
+
+        Vector3 camTarget = cameraTarget.position;
+        camTarget.z = camera.position.z;
+        camera.position = camTarget;
+
+        yield return new WaitForSecondsRealtime(0.5f);
+        yield return StartCoroutine(FadeIn());
+        tping = false;
+    }
+
+    private IEnumerator FadeOut() {
+        Color c = fadingPanel.color;
+        while (c.a < 1f) {
+            c.a += 0.2f;
+            c.a = Mathf.Clamp01(c.a);
+            fadingPanel.color = c;
+            yield return new WaitForSecondsRealtime(0.05f);
+        }
+    }
+
+    private IEnumerator FadeIn() {
+        Color c = fadingPanel.color;
+        while (c.a > 0f) {
+            c.a -= 0.2f;
+            c.a = Mathf.Clamp01(c.a);
+            fadingPanel.color = c;
+            yield return new WaitForSecondsRealtime(0.05f);
         }
     }
 }

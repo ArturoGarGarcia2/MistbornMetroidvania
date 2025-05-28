@@ -598,10 +598,10 @@ public class PauseManager : MonoBehaviour{
     private Consumible[,] consumibleGrid;
 
     private void UpdateInventory() {
-        int totalSlots = 12; // 4 columnas * 3 filas
+        int totalSlots = 12;
         int vialMetalCount = 8;
-        int laudanumIndex = 8; // slot para láudano
-        int projectileStartIndex = 9; // primer slot para proyectiles
+        int laudanumIndex = 8;
+        int projectileStartIndex = 9;
 
         // Obtén las listas de consumibles desde pd
         Consumible[] vialesMetales = (Consumible[])pd.GetMetalVials();
@@ -653,7 +653,7 @@ public class PauseManager : MonoBehaviour{
                     img.color = new Color(1, 1, 1, 0);
                 }
 
-                consumibleGrid[fila, col] = asignado; // <- aquí se guarda el objeto real
+                consumibleGrid[fila, col] = asignado;
                 SetData(GetConsumibleSeleccionado());
                 slotIndex++;
             }
@@ -695,7 +695,6 @@ public class PauseManager : MonoBehaviour{
                 pd.EquipHemaMetal(selectedIndex+1);
             }
         } else if (panelActual.name == "PanelMetales" && selectedIndex >= 0) {
-                Debug.Log("Selecteando en metales");
                 HandleSelectMetalVial();
             }
 
@@ -785,7 +784,6 @@ public class PauseManager : MonoBehaviour{
                     return;
                 }
             } else if (panelActual.name == "PanelMetales" && selectedVial) {
-                Debug.Log("CAMBIANDO DE METALES TRAS ELEGIR VIAL");
                 if (Metales.transform.GetChild(0).transform.GetChild(newIndex).gameObject.activeSelf) {
                     selectedRawMetalVialIndex = newIndex;
 
@@ -819,16 +817,12 @@ public class PauseManager : MonoBehaviour{
     }
 
     void HandleSelectMetalVial(){
-        Debug.Log("Handleando");
-        Debug.Log($"pd.GetMetalVialBySlot(selectedMetalVialIndex+1).content.Count: {pd.GetMetalVialBySlot(selectedIndex+1).content.Count}");
-        if (pd.GetMetalVialBySlot(selectedMetalVialIndex+1).content.Count == 0 && !selectedVial) {
-            Debug.Log("SELECCIONANDO UN VIAL VACÍO");
+        if (!pd.GetMetalVialBySlot(selectedMetalVialIndex+1).roto && pd.GetMetalVialBySlot(selectedMetalVialIndex+1).content.Count == 0 && !selectedVial) {
             selectedVial = true;
             UpdateSelection();
             ShowNewMetalVialData();
         } else if(selectedVial) {
             MasMetal();
-            Debug.Log($"Elegido: {(Metal)selectedRawMetalVialIndex+1}");
         }
     }
 
@@ -842,7 +836,6 @@ public class PauseManager : MonoBehaviour{
 
     public void OnMenosMetal(InputAction.CallbackContext context){
         if (context.performed && isPaused && panelActual.name == "PanelMetales" && selectedVial){
-            Debug.Log($"Elegido: {(Metal)selectedRawMetalVialIndex+1}");
             MenosMetal();
         }
     }
@@ -885,7 +878,6 @@ public class PauseManager : MonoBehaviour{
 
     void AcceptMetalVial(){
         for(int i = 0; i < rawMetalsUsed.Length; i++){
-            // content.Add(new MetalVialContent((Metal)i+1, rawMetalsUsed[i]));
             if(rawMetalsUsed[i] > 0){
                 pd.AddRawMetalToMetalVial(selectedMetalVialIndex, i+1, rawMetalsUsed[i]);
                 rawMetalsUsed[i] = 0;
@@ -929,10 +921,14 @@ public class PauseManager : MonoBehaviour{
             for (int i = 1; i <= Viales.transform.GetChild(0).childCount; i++) {
                 Image img = Viales.transform.GetChild(0).GetChild(i - 1).GetComponent<Image>();
 
-                if (pd.GetMetalVialBySlot(i).content.Count == 0) {
-                    img.sprite = vialesMetalesSprites[0];
-                } else {
-                    img.sprite = vialesMetalesSprites[1];
+                if(pd.GetMetalVialBySlot(i).roto){
+                    img.sprite = vialesMetalesSprites[2];
+                }else{
+                    if (pd.GetMetalVialBySlot(i).content.Count == 0) {
+                        img.sprite = vialesMetalesSprites[0];
+                    } else {
+                        img.sprite = vialesMetalesSprites[1];
+                    }
                 }
 
                 if (img != null) {

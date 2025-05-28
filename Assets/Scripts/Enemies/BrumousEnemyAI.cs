@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class BrumousEnemyAI : MonoBehaviour {
     public Transform player;
-    public float chaseRange = 5f;
+    public float baseChaseRange = 5f;
+    public float chaseRange;
     public float wanderRange = 5f;
     
     private BrumousEnemy enemy;
@@ -12,9 +13,16 @@ public class BrumousEnemyAI : MonoBehaviour {
 
     private bool movingRight = true;
 
+    protected PlayerScript playerScript;
+    public PlayerData pd;
+
     private void Start(){
         enemy = GetComponent<BrumousEnemy>();
         initialPos = transform.position;
+        chaseRange = baseChaseRange;
+
+        playerScript = FindObjectOfType<PlayerScript>();
+        pd = playerScript.pd;
 
         if (player == null){
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -26,6 +34,18 @@ public class BrumousEnemyAI : MonoBehaviour {
 
     private void Update(){
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        AloMetal amCop = pd.GetAloMetalIfEquipped((int)Metal.COPPER);
+        AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
+        if(amCop != null && amCop.IsBurning()){
+            if(amDur != null && amDur.IsBurning()){
+                chaseRange = baseChaseRange/4;
+            }else{
+                chaseRange = baseChaseRange/2;
+            }
+        }else{
+            chaseRange = baseChaseRange;
+        }
 
         if (distanceToPlayer < chaseRange){
             Vector2 direction = (player.position - transform.position).normalized;
