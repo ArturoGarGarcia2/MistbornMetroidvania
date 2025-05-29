@@ -639,6 +639,7 @@ public class PlayerScript : MonoBehaviour{
             }else if(-.9<X && X<-.3 && .3<Y && Y<.9){
                 selectedAloMetalSlot = 8;
             }
+            
         }else if(selectingConsumible){
             selectionMetal = Vector2.zero;
             selectionMetal = context.ReadValue<Vector2>();
