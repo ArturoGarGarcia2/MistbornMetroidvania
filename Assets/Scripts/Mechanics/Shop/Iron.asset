@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0119c1de3199c684f9b67c2bdff1ae4d, type: 3}
   m_Name: Iron
   m_EditorClassIdentifier: 
-  sprite: {fileID: -152312604, guid: 6e3675b9b255bd64b800767a2e7f4daa, type: 3}
+  sprite: {fileID: -373983210, guid: 6f49aef6af6384542957864b76cf4807, type: 3}
   price: 5
   renovable: 1
-  stackeable: 1
+  unlockable: 0
+  metalArt: 0
+  amount: 20
   name: Hierro en polvo
   description: "Polvo de hierro seco, preparado para a\xF1adirlo a un vial y as\xED
     recargar las reservas de un alomante."
   metal: 1
-  amount: 20

@@ -91,7 +91,7 @@ public class ShopManager : MonoBehaviour{
         itemTitle.text = buyingThing.name;
         itemDescription.text = buyingThing.description;
 
-        if(buyingThing.stackeable){
+        if(buyingThing.renovable){
             moreLess.SetActive(true);
             moreText.text = $" Añadir {buyingThing.amount}";
             lessText.text = $" Quitar {buyingThing.amount}";
@@ -138,7 +138,7 @@ public class ShopManager : MonoBehaviour{
     }
     // TECLA W
     public void onMoreStock(InputAction.CallbackContext context){
-        if (context.performed && showingPanel && buyingThing.stackeable){
+        if (context.performed && showingPanel && buyingThing.renovable){
             quantity++;
             FeruMetal fmDur = playerScript.pd.GetFeruMetalIfEquipped((int)Metal.DURALUMIN);
             if(fmDur != null && fmDur.IsStoring()){
@@ -152,7 +152,7 @@ public class ShopManager : MonoBehaviour{
     }
     // TECLA S
     public void onLessStock(InputAction.CallbackContext context){
-        if (context.performed && showingPanel && buyingThing.stackeable){
+        if (context.performed && showingPanel && buyingThing.renovable){
             if(quantity != 1){
                 quantity--;
                 FeruMetal fmDur = playerScript.pd.GetFeruMetalIfEquipped((int)Metal.DURALUMIN);

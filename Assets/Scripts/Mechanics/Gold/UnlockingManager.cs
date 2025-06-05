@@ -120,8 +120,28 @@ public class UnlockingManager : MonoBehaviour{
     public bool showingPanel = false;
     public bool canHidePanel = false;
 
+    Animator animator;
+
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
+        animator = GetComponent<Animator>();
+
+        if (panel == null) {
+            Debug.LogError("El objeto 'panel' no está asignado en el Inspector.");
+        }
+
+        bool unlocked = false;
+        if(unlockeableMetalArt == MetalArt.ALLOMANCY){
+            unlocked = playerScript.pd.IsAloMetalUnlocked((int)unlockeableMetal);
+
+        }else if(unlockeableMetalArt == MetalArt.FERUCHEMY){
+            unlocked = playerScript.pd.IsFeruMetalUnlocked((int)unlockeableMetal);
+
+        }else if(unlockeableMetalArt == MetalArt.HEMALURGY){
+            unlocked = playerScript.pd.IsHemaMetalUnlocked((int)unlockeableMetal);
+
+        }
+        animator.SetBool("Retrieved", unlocked);
         panelImage = panel.GetComponent<Image>();
         SetAlpha(metalName, 0f);
         SetAlpha(metalDescription, 0f);
@@ -136,13 +156,14 @@ public class UnlockingManager : MonoBehaviour{
 
         AloMetal amGol = pd.GetAloMetalIfEquipped((int)Metal.GOLD);
 
-        if (playerScript.interacting && playerInside && !showingPanel && amGol != null && amGol.IsBurning()) {
+        if (playerScript.interacting && playerInside && !showingPanel && ((unlockeableMetalArt == MetalArt.FERUCHEMY || unlockeableMetalArt == MetalArt.HEMALURGY) ? true : (amGol != null && amGol.IsBurning()))) {
             showingPanel = true;
-            UnlockAloMetalToPD();
+            UnlockMetalToPD();
         }
     }
 
-    void UnlockAloMetalToPD() {
+    void UnlockMetalToPD() {
+        animator.SetBool("Retrieved", true);
 
         if(unlockeableMetalArt == MetalArt.ALLOMANCY){
             pd.UnlockAloMetal((int)unlockeableMetal);
@@ -203,8 +224,9 @@ public class UnlockingManager : MonoBehaviour{
 
     IEnumerator WaitPanel() {
         yield return new WaitForSecondsRealtime(2f);
+        Debug.Log("Ya se puede quitar el panel de desbloqueo");
         canHidePanel = true;
-        yield return new WaitUntil(() => playerScript.hideUnlockingPanel);
+        yield return new WaitForSecondsRealtime(5f);
         playerScript.hideUnlockingPanel = false;
         StartCoroutine(HidePanel());
     }

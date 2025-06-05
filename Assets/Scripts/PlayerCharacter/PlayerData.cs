@@ -65,8 +65,6 @@ public class PlayerData{
     float ITime = 1f;
     bool invulnerable = false;
 
-    bool canGoldHeal = true;
-
     MetalVial[] metalVials = new MetalVial[8];
     RawMetal[] rawMetals = new RawMetal[17];
 
@@ -75,6 +73,8 @@ public class PlayerData{
     Projectile[] projectiles = new Projectile[3];
 
     Consumible[] inventorySlots = new Consumible[8];
+
+    bool dampened = false;
 
     public Sprite LoadSubSprite(string sheetPath, string subSpriteName) {
         Sprite[] sprites = Resources.LoadAll<Sprite>(sheetPath);
@@ -163,7 +163,7 @@ public class PlayerData{
         speed = baseSpeed;
 
 
-        baseBreathCapacity = 10f;
+        baseBreathCapacity = 6f;
         breathCapacity = baseBreathCapacity;
 
 
@@ -546,7 +546,7 @@ public class PlayerData{
             }
         }
         if(IsHemaMetalEquipped((int)Metal.ELECTRUM)){
-            if(UnityEngine.Random.Range(1,101) < (IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 20 : 10)){
+            if(UnityEngine.Random.Range(1,101) < (IsHemaMetalEquipped((int)Metal.DURALUMIN) ? 5 : 2)){
                 return;
             }
         }
@@ -578,7 +578,12 @@ public class PlayerData{
             }
             health -= realHurt;
             if(health <= 0){
-                alive = false;
+                FeruMetal fmAti = GetFeruMetalIfEquipped((int)Metal.ATIUM);
+                if(fmAti != null && fmAti.IsTapping()){
+                    health += 5;
+                }else{
+                    alive = false;
+                }
             }
             invulnerable = true;
         }
@@ -855,7 +860,6 @@ public class PlayerData{
         int checkingSlot = 1;
         foreach(Consumible consu in inventorySlots){
             if(consu is MetalVial){
-                Debug.Log(consu);
                 for (int i = 0; i < metalVials.Length; i++){
                     if (metalVials[i] != null && metalVials[i].EqualsConsumible(consu)){
                         // slotIndex = i;
@@ -911,19 +915,19 @@ public class PlayerData{
     public int GetFileId() => fileId;
     public int GetMaxHealth() => maxHealth;
     public int GetHealth() => health;
-    public int GetCheckPoint() => checkpoint;
+    public int GetCheckpoint() => checkpoint;
     public int GetDamage(){
         AloMetal amPew = GetAloMetalIfEquipped((int)Metal.PEWTER);
         AloMetal amDur = GetAloMetalIfEquipped((int)Metal.DURALUMIN);
 
         if (amPew != null && amPew.IsBurning()){
             if(amDur != null && amDur.IsBurning()){
-                return (int)(damage*3f);
+                return (int)(damage*5f*(dampened ? .8f : 1f));
             }else{
-                return (int)(damage*1.5f);
+                return (int)(damage*1.5f*(dampened ? .8f : 1f));
             }
         }else{
-            return damage;
+            return (int)(damage*(dampened ? .8f : 1f));
         }
     }
     public int GetVials() => vials;
@@ -934,9 +938,10 @@ public class PlayerData{
     public int GetPhaseTime() => phaseTime;
     public int GetCoins() => coins;
     public float GetWeight() => weight;
-    public float GetSpeed() => speed;
+    public float GetSpeed() => (int)(speed*(dampened ? .8f : 1f));
     public float GetITime() => ITime;
     public bool IsInvulnerable() => invulnerable;
+    public bool IsAlive() => alive;
     public float GetBreathCapacity() => breathCapacity;
     public float GetFireEntryTime() => fireEntryTime;
     public float GetFireExitTime() => fireExitTime;
@@ -977,7 +982,12 @@ public class PlayerData{
 
     public void SetMaxHealth(int mh) => this.maxHealth=mh;
     public void SetHealth(int h) => this.health=h;
-    public void SetCheckPoint(int cp) => this.checkpoint=cp;
+    public void SetCheckpoint(int cp){
+        this.checkpoint=cp;
+        float posX = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT x_pos FROM checkpoint WHERE id = {checkpoint}"));
+        float posY = Convert.ToSingle(DatabaseManager.Instance.ExecuteScalar($"SELECT y_pos FROM checkpoint WHERE id = {checkpoint}"));
+        checkpointPosition = new Vector3(posX,posY,0);
+    }
     public void SetDamage(int d) => this.damage=d;
     public void SetVials(int v) => this.vials=v;
     public void SetVialPower(int vp) => this.vialPower=vp;
@@ -986,6 +996,15 @@ public class PlayerData{
     public void MakeInvulnerable() => invulnerable = true;
     public void MakeVulnerable() => invulnerable = false;
     public void AddLaudanoBottle() => laudano.AddStock();
+    public void Revive(){
+        health = maxHealth;
+        alive = true;
+    }
+
+    public void AchieveEventById(int eventId) => achievedEvents.Add(new Event(eventId));
+    public void AchieveEventByName(string eventName) => achievedEvents.Add(new Event(eventName));
+
+    public void SetDampened(bool b) => dampened = b;
 
     public void UnlockAloMetal(int metalId) => unlockedAloMetals[metalId-1] = 1;
     public void UnlockFeruMetal(int metalId) => unlockedFeruMetals[metalId-1] = 1;
@@ -1025,6 +1044,15 @@ public class PlayerData{
 
     public void SetProjectilePrefab(int projectile, GameObject pf){
         projectiles[projectile].SetPrefab(pf);
+    }
+
+    public void TurnOffMetals(){
+        foreach(AloMetal am in aloMetals){
+            am.SetBurning(false);
+        }
+        foreach(FeruMetal fm in feruMetals){
+            fm.SetStatus(0);
+        }
     }
 
     public override string ToString(){

@@ -24,7 +24,11 @@ public class ProjectileBehaviour : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other){
         if (other.CompareTag("Enemy")){
-            other.GetComponent<BrumousEnemy>()?.ProjectileHurted(damage);
+            other.GetComponent<SimpleBrumousEnemy>()?.ProjectileHurted(damage);
+            Destroy(gameObject);
+        }
+        if (other.CompareTag("Koloss")){
+            other.GetComponent<KolossBoss>()?.GetHurt(damage);
             Destroy(gameObject);
         }
         else if (other.CompareTag("Floor")){

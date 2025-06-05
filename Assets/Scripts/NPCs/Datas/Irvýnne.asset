@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce7924d304bc00643a717f52f885dc32, type: 3}
+  m_Name: "Irv\xFDnne"
+  m_EditorClassIdentifier: 
+  npcName: "Irv\xFDnne"
+  eventName: hablado_irvynne
+  estados:
+  - estado: inicio
+    frases:
+    - "\xBFAcabas de salir del cementerio? Nunca me esperaba ver algo as\xED."
+    - "Tiene un aspecto horrible, pero te he visto quemar hierro, as\xED que tal
+      vez esto te viene bien"
+    - "Lo malo es que te voy a tener que cobrar, no son tiempos f\xE1ciles para nadie."
+  - estado: casa_1
+    frases:
+    - "\xA1Anda! Si eres t\xFA otra vez, "
+    - "Tiene un aspecto horrible, pero te he visto quemar hierro, as\xED que tal
+      vez esto te viene bien"
+    - "Lo malo es que te voy a tener que cobrar, no son tiempos f\xE1ciles para nadie."

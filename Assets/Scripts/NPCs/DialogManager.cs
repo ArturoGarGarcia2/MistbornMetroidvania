@@ -53,7 +53,6 @@ public class DialogManager : MonoBehaviour {
             frases.Enqueue(f);
         }
 
-        npcImage.sprite = npcData.npcSprite;
         npcNameText.text = npcData.npcName;
 
         dialogPanel.SetActive(true);
