@@ -17,21 +17,28 @@ public class BroncePulseManager : MonoBehaviour {
     string atium = "#00CFC8";
 
     public bool show = false; 
+    public bool isPulsing = false;
 
     void Start() {
         anim = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
         transparent.a = 0f;
-        StartCoroutine(PlayPulses());
     }
 
     void Update(){
         if(!show){
-            sr.color = transparent;
+            sr.color = new Color(0f,0f,0f,0f);
         }
     }
 
-    IEnumerator PlayPulses() {
+    void LateUpdate(){
+        if(!show){
+            sr.color = new Color(0f,0f,0f,0f);
+        }
+    }
+
+    public IEnumerator PlayPulses() {
+        isPulsing = true;
         while (true) {
             if(startingMetals.Contains(Metal.IRON))
                 yield return StartCoroutine(PlayIron());

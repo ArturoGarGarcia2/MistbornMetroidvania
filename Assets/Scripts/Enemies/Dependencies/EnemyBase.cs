@@ -49,7 +49,18 @@ public abstract class EnemyBase : MonoBehaviour{
     private Coroutine inflamedRoutine;
     private Coroutine dampenedRoutine;
 
+    protected Vector3 initialPosition;
+    private Vector3 previousPosition;
+    Rigidbody2D rb;
+    SpriteRenderer spriteRenderer;
+    Collider2D c2d;
+
     protected virtual void Start(){
+        previousPosition = transform.position;
+        rb = GetComponent<Rigidbody2D>();
+        c2d = GetComponent<Collider2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        initialPosition = transform.position;
         if (player == null){
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null){
@@ -68,6 +79,11 @@ public abstract class EnemyBase : MonoBehaviour{
     }
 
     protected virtual void Update(){
+        if(dead){
+            rb.bodyType = RigidbodyType2D.Static;
+            c2d.isTrigger = true;
+            return;
+        }
         moveSpeed = baseMoveSpeed;
         damage = baseDamage;
         
@@ -93,6 +109,26 @@ public abstract class EnemyBase : MonoBehaviour{
         }else{
             moveSpeed = baseMoveSpeed;
             attackRange = baseAttackRange * 1f;
+        }
+
+        if (spriteRenderer != null) {
+            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+            if (distanceToPlayer <= attackRange) {
+                // Mira al jugador
+                spriteRenderer.flipX = player.position.x < transform.position.x;
+            } else {
+                // Patrulla normalmente
+                float deltaX = transform.position.x - previousPosition.x;
+
+                if (deltaX > 0.01f) {
+                    spriteRenderer.flipX = false;
+                } else if (deltaX < -0.01f) {
+                    spriteRenderer.flipX = true;
+                }
+            }
+
+            previousPosition = transform.position;
         }
 
         HemaMetal hm = playerScript.pd.GetHemaMetalIfEquipped((int)Metal.BRONZE);
@@ -213,5 +249,14 @@ public abstract class EnemyBase : MonoBehaviour{
         if(other.tag == "BendalloyBubble"){
             inBenBubble = false;
         }
+    }
+
+    public virtual void ResetEnemy() {
+        transform.position = initialPosition;
+        health = baseHealth;
+        dead = false;
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        c2d.isTrigger = false;
+        gameObject.SetActive(true);
     }
 }

@@ -18,6 +18,12 @@ TagManager:
   - GoldEcho
   - BuyingSpot
   - Enemy
+  - Cadminea
+  - Koloss
+  - KolossAttack
+  - MusicZone
+  - Inquisidor
+  - InquisidorAttack
   layers:
   - Default
   - TransparentFX
@@ -25,8 +31,8 @@ TagManager:
   - Map
   - Water
   - UI
-  - 
-  - 
+  - DeadEnemy
+  - Player
   - 
   - 
   - 

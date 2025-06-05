@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: "\u039Brcturus"
   m_EditorClassIdentifier: 
   npcName: "\u039Brcturus"
-  npcSprite: {fileID: 21300000, guid: 3febaee11b9f1cf4eace7119c9cf4dd5, type: 3}
   eventName: "Hablado_\u039Brcturus"
   estados:
   - estado: inicio
     frases:
-    - "\xA1Hey!, veo que te has levantado ya, me alegra saber que a\xFAn respiras."
-    - "La noche pasada fue demasiado dura, ten\xEDamos dudas de si saldr\xEDa de
-      esta."
-    - "Pero bueno, ahora que est\xE1s de pie, quema ese peltre y ponte manos a la
-      obra."
-    - Que no tenemos tiempo que perder.
+    - "Loados sean los dioses, al excels\xEDsimo Lord Deickos nos honra con su presencia"
+    - "Lamento haberos dejado en la fosa, pero ya era demasiado peligroso el curaros
+      ah\xED como para tambi\xE9n sacaros"
+    - "El tiempo no apremia a nadie, y menos a los que lo pierden, as\xED que tomad
+      cuanto necesiteis, pagad y marchaos, regresad si gustais, aqu\xED estar\xE9
+      para ayudaros en lo que est\xE9 en mi mano."
+    - "Pero tambi\xE9n tengo mis propios menesteres, no es por ser descort\xE9s,
+      pero mejor no interrumpirnos mutuamente o al menos, lo menos posible."

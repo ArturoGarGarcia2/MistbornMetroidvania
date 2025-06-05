@@ -8,7 +8,7 @@ public class BrumousEnemyAI : MonoBehaviour {
     public float chaseRange;
     public float wanderRange = 5f;
     
-    private BrumousEnemy enemy;
+    private SimpleBrumousEnemy enemy;
     private Vector2 initialPos;
 
     private bool movingRight = true;
@@ -17,12 +17,11 @@ public class BrumousEnemyAI : MonoBehaviour {
     public PlayerData pd;
 
     private void Start(){
-        enemy = GetComponent<BrumousEnemy>();
+        enemy = GetComponent<SimpleBrumousEnemy>();
         initialPos = transform.position;
         chaseRange = baseChaseRange;
 
         playerScript = FindObjectOfType<PlayerScript>();
-        pd = playerScript.pd;
 
         if (player == null){
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -33,7 +32,11 @@ public class BrumousEnemyAI : MonoBehaviour {
     }
 
     private void Update(){
+        if(gameObject.GetComponent<SimpleBrumousEnemy>().dead) return;
+        pd = playerScript.pd;
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
+        if(distanceToPlayer > 30f) return;
 
         AloMetal amCop = pd.GetAloMetalIfEquipped((int)Metal.COPPER);
         AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);

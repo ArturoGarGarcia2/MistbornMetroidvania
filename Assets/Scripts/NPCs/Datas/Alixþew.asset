@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce7924d304bc00643a717f52f885dc32, type: 3}
+  m_Name: "Alix\xFEew"
+  m_EditorClassIdentifier: 
+  npcName: "Alix\xFEew"
+  eventName: hablado_alixzew
+  estados:
+  - estado: inicio
+    frases:
+    - Oh, Lord Deickos, no lo esperaba en pie tan pronto, me alegro de verle.
+    - "Lord Chr\xF3num me avis\xF3 de que despertar\xEDa m\xE1s pronto que tarde
+      antes de irse."
+    - "Me alegra que ese experimento de Lord Chr\xF3num funcionase, al parecer tenemos
+      grupos sangu\xEDneos compatibles, tengo que indagar m\xE1s en el significado
+      de eso."
+    - "Por lo que tengo entendido, le he concedido al darle mi sangre el don de la
+      feruquimia, no se preocupe, su secreto est\xE1 a salvo conmigo."
+    - "No s\xE9 si pecar\xE9 de desconsiderado, pero sabiendo que viaja mucho, \xBFle
+      importar\xEDa tomar esto y recopilar toda la informaci\xF3n? Intentar\xE9 recompensarle
+      con lo que pueda y ayudarle en cuanto me sea posible."

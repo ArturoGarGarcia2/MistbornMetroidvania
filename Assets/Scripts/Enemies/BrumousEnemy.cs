@@ -24,6 +24,7 @@ public class BrumousEnemy : EnemyBase, IBrumous {
 
         bpm = alomanticPulse.GetComponent<BroncePulseManager>();
         bpm.startingMetals = currentMetals;
+        parryManager = FindObjectOfType<ParryManager>();
         copperCloud.gameObject.SetActive(false);
     }
 
@@ -51,10 +52,9 @@ public class BrumousEnemy : EnemyBase, IBrumous {
 
     void FixedUpdate() {
         if(dead){
-            gameObject.SetActive(false);
+            GetComponent<Animator>().SetBool("Dead",true);
             return;
         }
-        parryManager = FindObjectOfType<ParryManager>();
 
         TryAttack();
         Hurted();
@@ -89,6 +89,7 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         }
         
         if(physicalHurted && !invulnerable){
+            physicalHurted = false;
             invulnerable = true;
             health -= playerScript.pd.GetDamage();
             StartCoroutine(InvulnerabilityCooldown());
@@ -121,7 +122,6 @@ public class BrumousEnemy : EnemyBase, IBrumous {
     }
     
     public void ProjectileHurted(int damage){
-        Debug.Log($"SIENDO DAÑADO POR UN PROYECTIL");
         if (burningAtium) {
             AloMetal amAti = pd.GetAloMetalIfEquipped((int)Metal.ATIUM);
             AloMetal amEle = pd.GetAloMetalIfEquipped((int)Metal.ELECTRUM);
@@ -166,12 +166,15 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         canGetChromed = true;
     }
 
+    void OnTriggerEnter2D(Collider2D other){
+        if (other.tag == "Player_Attack") {
+            physicalHurted = true;
+        }
+    }
+
     void OnTriggerStay2D(Collider2D other){
         if (other.tag == "CopperCloud") {
             inCopperCloud = true;
-        }
-        if (other.tag == "Player_Attack") {
-            physicalHurted = true;
         }
     }
 
@@ -179,32 +182,26 @@ public class BrumousEnemy : EnemyBase, IBrumous {
         if (other.tag == "CopperCloud") {
             inCopperCloud = false;
         }
-        if (other.tag == "Player_Attack") {
-            invulnerable = false;
-        }
     }
 
     protected override void OnAttackStart() {
+        if (isAttacking) return;
         StartCoroutine(AttackWithDelay());
     }
 
     private IEnumerator AttackWithDelay() {
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null) {
-            sr.color = Color.yellow;
-        }
+        isAttacking = true;
 
+        GetComponent<Animator>().SetTrigger("Attack");
         yield return new WaitForSeconds(attackDelay);
 
         if (player != null && !dead && Vector2.Distance(player.position, transform.position) <= attackRange) {
             Attack();
         }
 
-        if (sr != null) {
-            sr.color = Color.white;
-        }
+        yield return new WaitForSeconds(attackCooldown - attackDelay);
+        isAttacking = false;
     }
-
 
     protected override void Attack() {
         AloMetal amAti = pd.GetAloMetalIfEquipped((int)Metal.ATIUM);
@@ -228,9 +225,6 @@ public class BrumousEnemy : EnemyBase, IBrumous {
             burningElectrum = false;
             burningAtium = false;
         }else{
-            // attackRange = base.baseAttackRange;
-            // damage = base.baseDamage;
-            // moveSpeed = base.baseMoveSpeed;
             foreach(Metal currentMetal in currentMetals){
                 if(currentMetal == Metal.PEWTER){
                     damage *= 2;
@@ -247,5 +241,17 @@ public class BrumousEnemy : EnemyBase, IBrumous {
                 }
             }
         }
+    }
+
+    public override void ResetEnemy() {
+        base.ResetEnemy();
+        Debug.Log($"RESETEANDO");
+        GetComponent<Animator>().SetBool("Dead",false);
+        invulnerable = false;
+        chromed = false;
+        nicrosiled = false;
+        duralumined = false;
+        canGetChromed = true;
+        copperCloud?.SetActive(false);
     }
 }

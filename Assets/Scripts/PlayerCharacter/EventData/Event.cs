@@ -17,8 +17,7 @@ public class Event{
         );
         
         name = eventData["name"].ToString();
-        string preType = eventData["type"].ToString();
-        switch (preType){
+        switch (eventData["type"].ToString()){
             case "boss":
                 type = Type.BOSS;
                 break;
