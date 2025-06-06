@@ -27,7 +27,6 @@ public class HealthBar : MonoBehaviour{
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
         if (playerScript == null) {
-            Debug.LogError("No se encontró el PlayerScript en la escena.");
             return;
         }
     }

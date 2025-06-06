@@ -9,7 +9,6 @@ public class ParallaxManager : MonoBehaviour {
         if (other.CompareTag("ParallaxZone")) {
             ParallaxZone newZone = other.GetComponentInChildren<ParallaxZone>();
             if (newZone != null && newZone != currentZone) {
-                Debug.Log($"currentZone: {currentZone} / newZone: {newZone}");
                 if (currentZone != null) currentZone.Deactivate();
                 newZone.Activate();
                 currentZone = newZone;

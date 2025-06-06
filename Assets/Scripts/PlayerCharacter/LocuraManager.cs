@@ -25,7 +25,6 @@ public class LocuraManager : MonoBehaviour{
         maxTime = declive;
         ps = FindObjectOfType<PlayerScript>();
         if (ps == null) {
-            Debug.LogError("No se encontró el ps en la escena.");
             return;
         }
         time = ps.pd.GetPhaseTime();

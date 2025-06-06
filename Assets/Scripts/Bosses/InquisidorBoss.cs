@@ -66,13 +66,11 @@ public class InquisidorBoss : MonoBehaviour, Boss{
     void Awake(){
         var others = FindObjectsOfType<InquisidorBoss>();
         if (others.Length > 1){
-            Debug.LogWarning("Destruyendo instancia duplicada del jefe");
             Destroy(gameObject);
             return;
         }
         animator = GetComponentInChildren<Animator>();
         health = maxHealth;
-        Debug.Log($"[INQUISIDOR] Instancia creada: {GetInstanceID()}");
     }
 
     void Start(){
@@ -123,7 +121,6 @@ public class InquisidorBoss : MonoBehaviour, Boss{
             GetComponent<SpriteRenderer>().color = Color.white;
         }
         if(bossHealthUI != null){
-            Debug.Log($"[INQUISIDOR {GetInstanceID()}] {health}/{maxHealth}");
             bossHealthUI.UpdateHealth(health);
         }
         pd = playerScript.pd;
@@ -314,7 +311,6 @@ public class InquisidorBoss : MonoBehaviour, Boss{
     }
 
     public void ShowHealthBar(){
-        Debug.Log("Mostrando la vida desde Inquisidor");
         bossHealthUI.Init(maxHealth);
         cierre.SetActive(true);
     }
