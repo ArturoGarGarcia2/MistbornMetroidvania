@@ -9,22 +9,19 @@ public class BossZoneManager : MonoBehaviour {
 
     private Boss boss;
 
+    public GameObject salida;
+    public GameObject cierre;
+
     private void Start() {
-        // if (bossBehaviour != null) {
-        //     if (boss == null) {
-        //         Debug.LogError("El componente asignado no implementa la interfaz Boss");
-        //     }
-        //     // instance = bossBehaviour.GetInstanceID();
-        //     Debug.Log($"boss: {boss}");
-        // }
     }
 
     void OnTriggerStay2D(Collider2D other) {
         if (other.CompareTag("Player")) {
             playerInside = true;
             boss = bossBehaviour as Boss;
-            Debug.Log($"boss: {boss}");
             boss.ShowHealthBar();
+            cierre.SetActive(true);
+            salida.SetActive(false);
         }
     }
 
@@ -32,6 +29,8 @@ public class BossZoneManager : MonoBehaviour {
         if (other.CompareTag("Player")) {
             playerInside = false;
             boss.HideHealthBar();
+            cierre.SetActive(false);
+            salida.SetActive(true);
         }
     }
 }

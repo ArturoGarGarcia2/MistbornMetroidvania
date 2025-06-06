@@ -148,21 +148,18 @@ public class BrumousEnemy : EnemyBase, IBrumous {
 
     IEnumerator HandleNicrosil(){
         yield return new WaitForSeconds(duralumined ? 5f : 3f);
-        Debug.Log($"ME DESNICROSILEO");
         nicrosiled = false;
         chromed = true;
         StartCoroutine(HandleChromium());
     }
     IEnumerator HandleChromium(){
         yield return new WaitForSeconds(duralumined ? 8f : 5f);
-        Debug.Log($"ME DESCHROMEO");
         chromed = false;
         duralumined = false;
         StartCoroutine(HandleCanGetChromium());
     }
     IEnumerator HandleCanGetChromium(){
         yield return new WaitForSeconds(5f);
-        Debug.Log($"YA PUEDEN CHROMEARME");
         canGetChromed = true;
     }
 
@@ -245,7 +242,6 @@ public class BrumousEnemy : EnemyBase, IBrumous {
 
     public override void ResetEnemy() {
         base.ResetEnemy();
-        Debug.Log($"RESETEANDO");
         GetComponent<Animator>().SetBool("Dead",false);
         invulnerable = false;
         chromed = false;

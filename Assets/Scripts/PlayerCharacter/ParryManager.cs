@@ -47,6 +47,5 @@ public class ParryManager : MonoBehaviour{
     }
 
     public void OnSuccessfulParry(){
-        Debug.Log("¡Parry exitoso!");
     }
 }

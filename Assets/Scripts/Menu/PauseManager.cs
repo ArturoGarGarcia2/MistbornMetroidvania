@@ -348,7 +348,6 @@ public class PauseManager : MonoBehaviour{
         panelActual = menuPanels[currentPanelIndex];
         playerScript = FindObjectOfType<PlayerScript>();
         if (playerScript == null) {
-            Debug.LogError("No se encontró el PlayerScript en la escena.");
             return;
         }
 
@@ -1084,7 +1083,6 @@ public class PauseManager : MonoBehaviour{
                         Color.white
                     );
             }else{
-                Debug.LogWarning($"El metal {metal.name} no tiene Image asignado.");
             }
         }
 

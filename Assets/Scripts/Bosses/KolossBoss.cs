@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class KolossBoss : MonoBehaviour, Boss{
+    public GameObject bossGameObject;
     public int maxHealth = 150;
     public int damage = 20;
     private int health;
@@ -37,7 +38,6 @@ public class KolossBoss : MonoBehaviour, Boss{
     public BossHealthUI bossHealthUI;
 
     private void Awake(){
-        cierre.SetActive(false);
         animator = GetComponentInChildren<Animator>();
         health = maxHealth;
     }
@@ -46,9 +46,11 @@ public class KolossBoss : MonoBehaviour, Boss{
         playerScript = FindObjectOfType<PlayerScript>();
         CyBManager = FindObjectOfType<CadmiumBendalloyManager>();
         initialPosition = transform.position;
+        cierre.SetActive(false);
         pd = playerScript.pd;
         if(pd.IsEventAchievedByName(eventName)){
-            Destroy(gameObject);
+            Destroy(bossGameObject);
+            return;
         }
         salida.SetActive(false);
         kolossAttack.SetActive(false);
@@ -80,6 +82,10 @@ public class KolossBoss : MonoBehaviour, Boss{
         }else{
             moveSpeed = baseMoveSpeed;
             attackRange = baseAttackRange * 1f;
+        }
+
+        if(health<=0){
+            cierre.SetActive(false);
         }
 
         if(hurted){
@@ -214,7 +220,6 @@ public class KolossBoss : MonoBehaviour, Boss{
     }
 
     public void ShowHealthBar(){
-        Debug.Log("Mostrando la vida desde Koloss");
         bossHealthUI.Init(maxHealth);
         cierre.SetActive(true);
     }

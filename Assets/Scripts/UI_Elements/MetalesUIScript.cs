@@ -56,12 +56,10 @@ public class MetalesUIScript : MonoBehaviour
     void Start(){
         playerScript = FindObjectOfType<PlayerScript>();
         if (playerScript == null) {
-            Debug.LogError("No se encontró el PlayerScript en la escena.");
             return;
         }
         locuraManager = FindObjectOfType<LocuraManager>();
         if (locuraManager == null) {
-            Debug.LogError("No se encontró el LocuraManager en la escena.");
             return;
         }
     }

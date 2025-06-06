@@ -57,6 +57,10 @@ public class PlayerData{
     int[] feruSlots = new int[4];
     int[] hemaSlots = new int[7];
 
+    int[] unlockedHealthVials = new int[4];
+    int[] unlockedMaxHealthVials = new int[3];
+    int[] unlockedMetalVials = new int[7];
+
     int eventNum;
     List<Event> achievedEvents = new List<Event>();
 
@@ -221,11 +225,24 @@ public class PlayerData{
             null
         );
 
+        for(int i = 1; i <= unlockedHealthVials.Length; i++){
+            unlockedHealthVials[i-1] = DatabaseManager.Instance.GetInt($"SELECT unlocked FROM unlocked_vial WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'health'");
+        }
+        for(int i = 1; i <= unlockedMaxHealthVials.Length; i++){
+            unlockedMaxHealthVials[i-1] = DatabaseManager.Instance.GetInt($"SELECT unlocked FROM unlocked_vial WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'max_health'");
+        }
+        for(int i = 1; i <= unlockedMetalVials.Length; i++){
+            unlockedMetalVials[i-1] = DatabaseManager.Instance.GetInt($"SELECT unlocked FROM unlocked_vial WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'metal'");
+        }
+
         eventNum = DatabaseManager.Instance.GetInt("SELECT COUNT(*) FROM event");
         List<int> retrievedAchievedEvent = DatabaseManager.Instance.GetIntListFromQuery($"SELECT event_id FROM achieved_event WHERE file_id = {fileId}");
         foreach(int i in retrievedAchievedEvent){
             Event e = new Event(i);
             achievedEvents.Add(e);
+        }
+
+        foreach(Event e in achievedEvents){
         }
 
         RetrieveInventory();
@@ -419,7 +436,6 @@ public class PlayerData{
                 break;
 
             case Metal.COPPER:
-                Debug.Log("FERUCHEMIC COPPER TODO");
                 break;
 
             case Metal.BRONZE:
@@ -453,14 +469,6 @@ public class PlayerData{
 
             case Metal.ALUMINIUM:
                 // DONE
-                break;
-
-            case Metal.DURALUMIN:
-                Debug.Log("FERUCHEMIC DURALUMIN TODO");
-                break;
-
-            case Metal.ATIUM:
-                Debug.Log("FERUCHEMIC ATIUM TODO");
                 break;
         }
     }
@@ -836,6 +844,7 @@ public class PlayerData{
             $"checkpoint_id = {checkpoint}, "+
             $"damage = {baseDamage}, "+
             $"vials = {vials}, "+
+            //DatabaseManager.Instance.GetInt($"SELECT COUNT(*) FROM unlocked_vial WHERE file_id =")
             $"vial_power = {baseVialPower}, "+
             $"phase = '{phase}', "+
             $"phase_time = {phaseTime}, "+
@@ -853,6 +862,22 @@ public class PlayerData{
         }
         foreach(RawMetal rm in rawMetals){
             DatabaseManager.Instance.ExecuteNonQuery($"UPDATE metal_file SET raw_amount = {rm.amount} WHERE file_id = {fileId} AND metal_id = {(int)rm.metal}");
+        }
+
+
+        for(int i = 1; i <= unlockedHealthVials.Length; i++){
+            if(unlockedHealthVials[i-1] == 1)
+                DatabaseManager.Instance.ExecuteNonQuery($"UPDATE unlocked_vial SET unlocked = 1 WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'health'");
+        }
+
+        for(int i = 1; i <= unlockedMaxHealthVials.Length; i++){
+            if(unlockedMaxHealthVials[i-1] == 1)
+                DatabaseManager.Instance.ExecuteNonQuery($"UPDATE unlocked_vial SET unlocked = 1 WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'max_health'");
+        }
+
+        for(int i = 1; i <= unlockedMetalVials.Length; i++){
+            if(unlockedMetalVials[i-1] == 1)
+                DatabaseManager.Instance.ExecuteNonQuery($"UPDATE unlocked_vial SET unlocked = 1 WHERE file_id = {fileId} AND vial_id = {i} AND vial_type = 'metal'");
         }
     }
 
@@ -959,6 +984,10 @@ public class PlayerData{
     public bool IsFeruMetalUnlocked(int idMetal) => unlockedFeruMetals[idMetal-1] == 1;
     public bool IsHemaMetalUnlocked(int idMetal) => unlockedHemaMetals[idMetal-1] == 1;
 
+    public bool IsMetalVialUnlocked(int idVial) => unlockedMetalVials[idVial-1] == 1;
+    public bool IsHealthVialUnlocked(int idVial) => unlockedHealthVials[idVial-1] == 1;
+    public bool IsMaxHealthVialUnlocked(int idVial) => unlockedMaxHealthVials[idVial-1] == 1;
+
     public AloMetal[] GetAloMetals() => aloMetals;
     public FeruMetal[] GetFeruMetals() => feruMetals;
     public HemaMetal[] GetHemaMetals() => hemaMetals;
@@ -967,9 +996,34 @@ public class PlayerData{
     public int[] GetFeruSlots() => feruSlots;
     public int[] GetHemaSlots() => hemaSlots;
 
-    public bool IsEventAchievedByID(int eventId) => achievedEvents.IndexOf(new Event(eventId)) != -1;
-    public bool IsEventAchievedByName(string eventName) => achievedEvents.IndexOf(new Event(eventName)) != -1;
-    public bool IsEventAchievedByEvent(Event eventInstance) => achievedEvents.IndexOf(eventInstance) != -1;
+    public bool IsEventAchievedById(int eventId){
+        bool hasEvent = false;
+        foreach(Event e in achievedEvents){
+            if(e.GetId() == eventId){
+                hasEvent = true;
+            }
+        }
+        return hasEvent;
+    }
+    
+    public bool IsEventAchievedByName(string eventName){
+        bool hasEvent = false;
+        foreach(Event e in achievedEvents){
+            if(e.GetName() == eventName){
+                hasEvent = true;
+            }
+        }
+        return hasEvent;
+    }
+    public bool IsEventAchievedByEvent(Event eventInstance){
+        bool hasEvent = false;
+        foreach(Event e in achievedEvents){
+            if(e.GetId() == eventInstance.GetId()){
+                hasEvent = true;
+            }
+        }
+        return hasEvent;
+    }
 
     public MetalVial[] GetMetalVials() => metalVials;
     public RawMetal[] GetRawMetals() => rawMetals;
@@ -1010,9 +1064,26 @@ public class PlayerData{
     public void UnlockFeruMetal(int metalId) => unlockedFeruMetals[metalId-1] = 1;
     public void UnlockHemaMetal(int metalId) => unlockedHemaMetals[metalId-1] = 1;
 
+    public void UnlockHealthVial(int vialId){
+        unlockedHealthVials[vialId-1] = 1;
+        vials+=1;
+    }
+    public void UnlockMaxHealthVial(int vialId){
+        unlockedMaxHealthVials[vialId-1] = 1;
+        maxHealth+=30;
+        health = maxHealth;
+    }
+    public void UnlockMetalVial(int vialId){
+        unlockedMetalVials[vialId-1] = 1;
+        UnlockMetalVial();
+    }
+
     public void UnlockMetalVial(){
         metalVialNum+=1;
-        GetMetalVialBySlot(metalVialNum-1).roto = false;
+        GetMetalVialBySlot(metalVialNum).roto = false;
+        foreach(var vial in metalVials){
+            Debug.Log($"vial: {vial}");
+        }
     }
 
     public void BuySomething(int price){
@@ -1027,7 +1098,7 @@ public class PlayerData{
 
     public void AddRawMetalToMetalVial(int vialSlot, int metalId, int amount){
         metalVials[vialSlot].Add(new MetalVialContent((Metal)metalId,amount));
-        SpendRawMetal(metalId,amount);
+        // SpendRawMetal(metalId,amount);
     }
     public void SpendRawMetal(int metalId, int spentAmount) => rawMetals[metalId-1].amount -= spentAmount;
 

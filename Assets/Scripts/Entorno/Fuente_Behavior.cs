@@ -25,7 +25,6 @@ public class FuenteBehavior : MonoBehaviour
             if (int.TryParse(nombrePartes[1], out fuenteID)) {
                 id = fuenteID;
             } else {
-                Debug.LogWarning("El ID de la fuente no es un número válido.");
             }
         }
 
@@ -42,16 +41,13 @@ public class FuenteBehavior : MonoBehaviour
             string insertQuery = "INSERT INTO checkpoint (id, x_pos, y_pos) " +
                                 "VALUES (@param0, @param1, @param2);";
             DatabaseManager.Instance.ExecuteNonQuery(insertQuery, id, posicionX, posicionY-1.5);
-            // Debug.Log("Punto de control insertado: ID = " + id + ", Posición = (" + posicionX + ", " + posicionY + ")");
         } else {
-            // Debug.Log("El punto de control con ID = " + id + " ya existe.");
         }
 
         // Comprobar si la fuente está activa
         int activo = (int)(long)DatabaseManager.Instance.ExecuteScalar(
             "SELECT COUNT(*) FROM visited_checkpoint WHERE file_id = 1 AND checkpoint_id = @param0;", id);
 
-        // Debug.Log("ACTIVA LA FUENTE: " + activo);
         if (activo > 0) {
             Fuente.GetComponent<Animator>().SetBool("Encendida", true);
         } else {

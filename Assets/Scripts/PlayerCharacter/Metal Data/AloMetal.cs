@@ -32,11 +32,8 @@ public class AloMetal{
     }
 
     public void Recharge(int rechargeAmount){
-        Debug.Log($"RECARGANDO EN ALOMETAL {amount}");
         amount += rechargeAmount;
-        Debug.Log($"RECARGADO {amount}");
         if(amount > 1000){
-            Debug.Log($"NOS HEMOS PASAO");
             amount = 1000;
         }
     }

@@ -9,9 +9,13 @@ public class UnlockingManager : MonoBehaviour{
     public Metal unlockeableMetal;
     public MetalArt unlockeableMetalArt;
 
+    public VialType unlockableVialType;
+    public int vialId;
+
     public Sprite[] aloMetalSymbols;
     public Sprite[] feruMetalSymbols;
     public Sprite[] hemaMetalSymbols;
+    public Sprite[] vialSprites;
     string[] names = {
         "HIERRO",
         "ACERO",
@@ -112,6 +116,7 @@ public class UnlockingManager : MonoBehaviour{
     Image panelImage;
 
     bool playerInside = false;
+    bool unlocked = false;
     
     PlayerScript playerScript;
     PlayerData pd;
@@ -127,10 +132,9 @@ public class UnlockingManager : MonoBehaviour{
         animator = GetComponent<Animator>();
 
         if (panel == null) {
-            Debug.LogError("El objeto 'panel' no está asignado en el Inspector.");
+            return;
         }
 
-        bool unlocked = false;
         if(unlockeableMetalArt == MetalArt.ALLOMANCY){
             unlocked = playerScript.pd.IsAloMetalUnlocked((int)unlockeableMetal);
 
@@ -140,6 +144,14 @@ public class UnlockingManager : MonoBehaviour{
         }else if(unlockeableMetalArt == MetalArt.HEMALURGY){
             unlocked = playerScript.pd.IsHemaMetalUnlocked((int)unlockeableMetal);
 
+        }else if(unlockeableMetalArt == MetalArt.NULL){
+            if(unlockableVialType == VialType.HEALTH){
+                unlocked = playerScript.pd.IsHealthVialUnlocked(vialId);
+            }else if(unlockableVialType == VialType.METAL){
+                unlocked = playerScript.pd.IsMetalVialUnlocked(vialId);
+            }else if(unlockableVialType == VialType.MAX_HEALTH){
+                unlocked = playerScript.pd.IsMaxHealthVialUnlocked(vialId);
+            }
         }
         animator.SetBool("Retrieved", unlocked);
         panelImage = panel.GetComponent<Image>();
@@ -152,11 +164,12 @@ public class UnlockingManager : MonoBehaviour{
     }
 
     void Update() {
+        if(unlocked) return;
         pd = playerScript.pd;
 
         AloMetal amGol = pd.GetAloMetalIfEquipped((int)Metal.GOLD);
 
-        if (playerScript.interacting && playerInside && !showingPanel && ((unlockeableMetalArt == MetalArt.FERUCHEMY || unlockeableMetalArt == MetalArt.HEMALURGY) ? true : (amGol != null && amGol.IsBurning()))) {
+        if (playerScript.interacting && playerInside && !showingPanel && ((unlockeableMetalArt == MetalArt.FERUCHEMY || unlockeableMetalArt == MetalArt.HEMALURGY || unlockeableMetalArt == MetalArt.NULL) ? true : (amGol != null && amGol.IsBurning()))) {
             showingPanel = true;
             UnlockMetalToPD();
         }
@@ -164,6 +177,7 @@ public class UnlockingManager : MonoBehaviour{
 
     void UnlockMetalToPD() {
         animator.SetBool("Retrieved", true);
+        unlocked = true;
 
         if(unlockeableMetalArt == MetalArt.ALLOMANCY){
             pd.UnlockAloMetal((int)unlockeableMetal);
@@ -171,27 +185,56 @@ public class UnlockingManager : MonoBehaviour{
             pd.UnlockFeruMetal((int)unlockeableMetal);
         }else if(unlockeableMetalArt == MetalArt.HEMALURGY){
             pd.UnlockHemaMetal((int)unlockeableMetal);
+        }else if(unlockeableMetalArt == MetalArt.NULL){
+
+            if(unlockableVialType == VialType.HEALTH){
+                pd.UnlockHealthVial((int)vialId);
+            }else if(unlockableVialType == VialType.METAL){
+                pd.UnlockMetalVial((int)vialId);
+            }else if(unlockableVialType == VialType.MAX_HEALTH){
+                pd.UnlockMaxHealthVial((int)vialId);
+            }
         }
 
         panel.SetActive(true);
-        string tipo = unlockeableMetalArt == MetalArt.ALLOMANCY ? "ALOMÁNTICO" :
-                    unlockeableMetalArt == MetalArt.FERUCHEMY ? "FERUQUÍMICO" :
-                    unlockeableMetalArt == MetalArt.HEMALURGY ? "HEMALÚRGICO" : 
-                    "¿?¿?¿?";
+        if(unlockeableMetalArt != MetalArt.NULL){
+            string tipo = unlockeableMetalArt == MetalArt.ALLOMANCY ? "ALOMÁNTICO" :
+                        unlockeableMetalArt == MetalArt.FERUCHEMY ? "FERUQUÍMICO" :
+                        unlockeableMetalArt == MetalArt.HEMALURGY ? "HEMALÚRGICO" : 
+                        "¿?¿?¿?";
 
-        title.text = $"METAL {tipo} DESBLOQUEADO";
-        metalName.text = names[(int)unlockeableMetal - 1];
-        metalDescription.text = descriptions[(int)unlockeableMetal - 1];
-        foreach(Image i in metalSymbols){
-            if(unlockeableMetalArt == MetalArt.ALLOMANCY){
-                i.sprite = aloMetalSymbols[(int)unlockeableMetal - 1];
+            title.text = $"METAL {tipo} DESBLOQUEADO";
+            metalName.text = names[(int)unlockeableMetal - 1];
+            metalDescription.text = descriptions[(int)unlockeableMetal - 1];
+            foreach(Image i in metalSymbols){
+                if(unlockeableMetalArt == MetalArt.ALLOMANCY){
+                    i.sprite = aloMetalSymbols[(int)unlockeableMetal - 1];
 
-            }else if(unlockeableMetalArt == MetalArt.FERUCHEMY){
-                i.sprite = feruMetalSymbols[(int)unlockeableMetal - 1];
+                }else if(unlockeableMetalArt == MetalArt.FERUCHEMY){
+                    i.sprite = feruMetalSymbols[(int)unlockeableMetal - 1];
 
-            }else if(unlockeableMetalArt == MetalArt.HEMALURGY){
-                i.sprite = hemaMetalSymbols[(int)unlockeableMetal - 1];
+                }else if(unlockeableMetalArt == MetalArt.HEMALURGY){
+                    i.sprite = hemaMetalSymbols[(int)unlockeableMetal - 1];
 
+                }
+            }
+        }else{
+            title.text = $"VIAL {(unlockableVialType == VialType.HEALTH ? "DE VIDA" : (unlockableVialType == VialType.METAL ? "METÁLICO" : "DE VIDA MÁXIMA") )} DESBLOQUEADO";
+            metalName.text = "";
+            metalDescription.text = unlockableVialType == VialType.HEALTH ? @"Vial cuyo contenido es desconocido, pero que al ser ingerido cura heridas, golpes tanto las leves como las más mortales de ellas." : 
+                                    unlockableVialType == VialType.METAL ? @"Lleno de alcohol para evitar la oxidación, tan sólo le hace falta metal en polvo y un alomante será imparable." :
+                                                                            @"Ni el sabor ni la textura son de agrado de nadie, mas nadie puede negar la resistencia que otorga al ingerirse.";
+            foreach(Image i in metalSymbols){
+                if(unlockableVialType == VialType.HEALTH){
+                    i.sprite = vialSprites[0];
+
+                }else if(unlockableVialType == VialType.METAL){
+                    i.sprite = vialSprites[1];
+
+                }else if(unlockableVialType == VialType.MAX_HEALTH){
+                    i.sprite = vialSprites[2];
+
+                }
             }
         }
 
@@ -199,8 +242,6 @@ public class UnlockingManager : MonoBehaviour{
             Color c = panelImage.color;
             panelImage.color = new Color(c.r, c.g, c.b, 0f);
             StartCoroutine(ShowPanel());
-        } else {
-            Debug.LogError("Panel object does not have an Image component.");
         }
     }
 
@@ -224,7 +265,6 @@ public class UnlockingManager : MonoBehaviour{
 
     IEnumerator WaitPanel() {
         yield return new WaitForSecondsRealtime(2f);
-        Debug.Log("Ya se puede quitar el panel de desbloqueo");
         canHidePanel = true;
         yield return new WaitForSecondsRealtime(5f);
         playerScript.hideUnlockingPanel = false;

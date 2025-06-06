@@ -26,7 +26,6 @@ public class Projectile : MonoBehaviour, Consumible{
     }
 
     public void Consume(){
-        Debug.Log($"DISPARANDO {name} ({stock})");
         if (stock <= 0) return;
         if(name == "Moneda"){
             AloMetal amSte = playerScript.pd.GetAloMetalIfEquipped((int)Metal.STEEL);

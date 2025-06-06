@@ -16,7 +16,6 @@ public class ZoneMusicTrigger : MonoBehaviour{
 
     void OnTriggerEnter2D(Collider2D other){
         if (other.CompareTag("Player")){
-            Debug.Log("ME HAN ENTRADO");
             MusicManager.Instance?.PlayMusic(musicId);
             ps.inDoors = inDoors;
             ps.outDoors = outDoors;

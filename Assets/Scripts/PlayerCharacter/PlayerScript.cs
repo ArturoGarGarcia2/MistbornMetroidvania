@@ -198,7 +198,7 @@ public class PlayerScript : MonoBehaviour{
     public GameObject piedraProjectile;
 
     void Awake(){
-        pd = new PlayerData(1);
+        pd = new PlayerData(PlayerPrefs.GetInt("File"));
     }
 
     void Start(){
@@ -233,8 +233,6 @@ public class PlayerScript : MonoBehaviour{
             .Where(b => b != null)
             .ToArray();
 
-        Debug.Log($"allBosses: {allBosses} / allBosses[0]: {allBosses[0]} / allBosses.Length: {allBosses.Length}");
-        Debug.Log(allBosses[0]);
         fadingText.color = new Color(1f,0f,0f,0f);
     }
 
@@ -343,6 +341,8 @@ public class PlayerScript : MonoBehaviour{
         }
     }
 
+    public GameObject leyenda;
+
     void FixedUpdate(){
         playerLight.transform.position = transform.position;
         Light2D pl = playerLight.GetComponent<Light2D>();
@@ -385,9 +385,15 @@ public class PlayerScript : MonoBehaviour{
                 HandleFadingPanel();
 
                 if(pd.IsAlive()){
+                    HemaMetal hmCop = pd.GetHemaMetalIfEquipped((int)Metal.COPPER);
+                    if(hmCop != null){
+                        leyenda.SetActive(true);
+                    }else{
+                        leyenda.SetActive(false);
+                    }
+
                     rb.mass = pd.GetWeight();
                     foreach(GameObject bigMist in bigMists){
-                        // bigMist.gameObject.SetActive(state);
                         bigMist.transform.position = gameObject.transform.position;
                     }
                     smallMist.transform.position = gameObject.transform.position;
@@ -562,7 +568,7 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnOpenMetalWheel(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && !selectingConsumible){
             selectingMetal = true;
             cvMetalWheel.SetActive(true);
             Time.timeScale = 0.2f;
@@ -631,7 +637,7 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnOpenConsumibleWheel(InputAction.CallbackContext context){
-        if (context.started && !pauseManager.isPaused){
+        if (context.started && !pauseManager.isPaused && !selectingMetal){
             selectingConsumible = true;
             cvConsumibleWheel.SetActive(true);
             Time.timeScale = 0.2f;
@@ -705,7 +711,6 @@ public class PlayerScript : MonoBehaviour{
     }
 
     void SelectConsumible(){
-        Debug.Log($"ELEGIDO EL CONSUMIBLE Nº: {selectedConsumibleSlot}");
     }
 
     public void OnMove(InputAction.CallbackContext context){
@@ -811,10 +816,7 @@ public class PlayerScript : MonoBehaviour{
     }
 
     public void OnDash(InputAction.CallbackContext context){
-        // int peltre = PlayerPrefs.GetInt("Peltre");
-        // Debug.Log("Peltre: "+peltre);
         if (context.performed && canDash && !pressingQ){
-            // PlayerPrefs.SetInt("Peltre",peltre-3);
             StartDash();
         }
     }
@@ -862,8 +864,6 @@ public class PlayerScript : MonoBehaviour{
             inShop = true;
             var gotShop = shop.GetComponent<BuyingSpot>();
             if (gotShop != null){
-                // Debug.Log($"VÁMONOS DE COMPRASSS {shop}");
-                // Debug.Log($"VÁMONOS DE COMPRASSS {gotShop}");
                 shopManager.OpenPanel(gotShop.buyingThing);
             }
             speed = 0;
@@ -900,14 +900,11 @@ public class PlayerScript : MonoBehaviour{
         if (allBosses != null) {
             foreach (var boss in allBosses) {
                 if (boss == null) {
-                    Debug.LogWarning("Boss null al resetear enemigos (posiblemente destruido por reinicio de escena).");
                     continue;
                 }
 
                 boss.Reset();
             }
-        } else {
-            Debug.LogWarning("allBosses es null en ResetEnemies.");
         }
     }
 
@@ -951,7 +948,6 @@ public class PlayerScript : MonoBehaviour{
     void ChokeByToxicMist(){
         if(inToxicMist){
             breathUsed += Time.deltaTime;
-            Debug.Log($"breathUsed: {breathUsed}");
             if(breathUsed >= pd.GetBreathCapacity()){
                 breathUsed = 0f;
                 pd.EnvironmentHit(15);
@@ -1040,8 +1036,6 @@ public class PlayerScript : MonoBehaviour{
                 int fuenteID;
                 if (int.TryParse(nombrePartes[1], out fuenteID)) {
                     fuenteActual = fuenteID;
-                } else {
-                    Debug.LogWarning("El ID de la fuente no es un número válido.");
                 }
             }
         }
@@ -1143,7 +1137,6 @@ public class PlayerScript : MonoBehaviour{
         }
 
         if(unlockingManager.canHidePanel){
-            Debug.Log("Hideando el panel");
             hideUnlockingPanel = true;
         }
     }
@@ -1153,7 +1146,6 @@ public class PlayerScript : MonoBehaviour{
         );
     }
     public int GetIdMetal(string nombreMetal){
-        // Debug.Log($"nombreMetal: {nombreMetal}");
         return DatabaseManager.Instance.GetInt($"SELECT id FROM metals WHERE name = '{nombreMetal}';");
     }
     void OnEnable() {
@@ -1163,7 +1155,6 @@ public class PlayerScript : MonoBehaviour{
         GameEvents.OnNPCSpokenTo -= RegistrarDialogoConNPC;
     }
     void RegistrarDialogoConNPC(string eventName){
-        Debug.Log($"evento disparado: {eventName}");
 
         string nombreEvento = $"{eventName}";
 
@@ -1273,13 +1264,11 @@ public class PlayerScript : MonoBehaviour{
         }
     }
     void InUpdate(){
-        // Debug.Log($"nearEmotionObjects.Count: {nearEmotionObjects.Count}");
     }
     public void OnPushingEmotion(InputAction.CallbackContext context){
         AloMetal amBra = pd.GetAloMetalIfEquipped((int)Metal.BRASS);
         AloMetal amDur = pd.GetAloMetalIfEquipped((int)Metal.DURALUMIN);
         if(pressingQ && context.started && amBra != null && amBra.IsBurning()){
-            Debug.Log("Pulsando: PUSHING EMOTION");
             SimpleBrumousEnemy target = nearEmotionObjects[selectedEmotionObjective].GetComponent<SimpleBrumousEnemy>();
             if(target == null) return;
             if(!target.canMentalInterfiere) return;
