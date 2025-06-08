@@ -31,56 +31,75 @@ public class PauseManager : MonoBehaviour{
         "Atium",
     };
     private string[] descripcionMetalAlo = new string[] {
-        // Hierro
-        "Atrae objetos de metal al brumoso.\nSi el objeto es más pesado, el brumoso será atraído al metal.",
+        // HIERRO
+        "Al quemar el metal, manten pulsado Q para con A y D elegir una línea alomántica, \nmientras tengas pulsado Q, al pulsar U tirarás del objeto.\n"+
+        "Si el objeto es más ligero, saldrá lanzado hacia ti; si es más pesado, tú saldrás disparado hacia él.",
 
-        // Acero
-        "Repele objetos de metal al brumoso.\nSi el objeto es más pesado, el brumoso será repelido del metal.",
+        // ACERO
+        "Al quemar el metal, manten pulsado Q para con A y D elegir una línea alomántica, \nmientras tengas pulsado Q, al pulsar I empujarás del objeto.\n"+
+        "Si el objeto es más ligero, saldrá despedido; si es más pesado, tú saldrás despedido.",
 
-        // Estaño
-        "Aumenta la percepción del brumoso.\nLa vista, oído y olfato se verán agudizados mientras se queme el metal.",
+        // ESTAÑO
+        "Al quemar el metal, tus sentidos se agudizarán, permitiéndote ver hasta en las nieblas más densas\n"+
+        "Este metal es un arma de doble filo, pues cualquier ruido o luz fuerte puede confundirte.",
 
-        // Peltre
-        "Aumenta la fortaleza física del brumoso.\nLa fuerza, agilidad y resistencia se verán aumentados mientras se queme el metal.",
+        // PELTRE
+        "Al quemar el metal, tu cuerpo se volverá más fuerte y resistente, tus golpes harán más daño mientras que los recibidos harán menos\n"+
+        "Este metal es un arma de doble filo, pues si las heridas son letales y se deja de quemar, sucumbirás a las heridas.",
 
-        // Zinc
-        "Enardece las emociones del objetivo.\nTal es el efecto sobre las empciones que puede volver hostil al objetivo contra sus aliados.",
+        // ZINC
+        "Al quemar el metal, manten pulsado Q para con A y D elegir un objetivo válido, \nmientras tengas pulsado Q, al pulsar O enajenarás al objetivo.\n"+
+        "Su daño se verá incrementado, pero también su furia, atacando al resto de enemigos que tenga a su alrededor.",
 
-        // Latón
-        "Apacigua las emociones del objetivo.\nDependiendo del objetivo, puede provocarle menos daño al brumoso o ignorarlo por completo.",
+        // LATÓN
+        "Al quemar el metal, manten pulsado Q para con A y D elegir un objetivo válido, \nmientras tengas pulsado Q, al pulsar P apaciguarás al objetivo.\n"+
+        "Su daño se verá reducido al igual que su velocidad, llegando a ignorarte por completo si sus emociones ya estaban de por sí apaciguadas.",
 
-        // Cobre
-        "Oculta la alomancia del brumoso.\nEsto permite ocultar al brumoso de los enemigos que puedan detectar la alomancia.",
+        // COBRE
+        "Al quemar el metal, toda la alomancia usada se ocultará a los sentidos del bronce creando una nube de cobre, haciendo que sea más difícil detectarte.\n"+
+        "La alomancia mental de zinc o latón no funcionará si estás quemando cobre.",
 
-        // Bronce
-        "Muestra la alomancia de los brumosos cercanos.\nPermite detectar y conocer la alomancia de los brumosos cercanos.",
+        // BRONCE
+        "Al quemar el metal, toda la alomancia de alrededor será mostrada en forma de pulsos, aunque estos pueden ser tapados por los brumosos del cobre.\n"+
+        "Dependiendo de la velocidad, punto de inicio y color, se puede saber qué metal está quemando.\n"+
+        "Mezclado con duraluminio, se pueden atravesar las nubes de cobre.",
 
-        // Cadmio
-        "Crea una burbuja alrededor del brumoso que ralentiza el tiempo en su interior.\nLa percepción es que el tiempo fuera de la burbuja se acelera.",
+        // CADMIO
+        "Al quemar el metal, se genera una burbuja de velocidad en el punto donde lo quemaste haciendo que el exterior se vea acelerado en el tiempo.\n"+
+        "Hay plantas espinosas que al no sentir movimiento durante largos periodos de tiempo, guardan las espinas.\n"+
+        "Cuando se usa con duraluminio, la feruquimia se ve afectada.\n",
 
-        // Bendaleo
-        "Crea una burbuja alrededor del brumoso que acelera el tiempo en su interior.\nLa percepción es que el tiempo fuera de la burbuja se ralentiza.",
+        // BENDALEO
+        "Al quemar el metal, se genera una burbuja de velocidad en el punto donde lo quemaste haciendo que el exterior se vea ralentizado en el tiempo.\n"+
+        "Cuando se usa con duraluminio, el tiempo se contrae a tal punto que la burbuja y el paso del tiempo desaparecen.",
 
-        // Oro
-        "Crea una proyección de quién podría haber sido el brumoso.\nTocar la \"sombra de oro\" causa efectos secundarios desagradables.",
+        // ORO
+        "Si de verdad estas viendo este texto en el juego, algo he hecho mal programándolo.\n"+
+        "En principio nada debería desbloquear el oro ya que es el primer metal.",
 
-        // Electro
-        "Crea proyecciones de los posibles futuros cercanos del brumoso.\nAl conocer todas las posibilidades que puede tomar, contrarresta los efectos del atium.",
+        // ELECTRO
+        "Al quemar el metal, proyectas múltiples sombras de electro, mostrándote todos los caminos que puedes tomar en el futuro muy próximo.\n"+
+        "Su utilidad deriva al usarlo contra un brumoso de atium, ya que tu futuro estará tan indeterminado que no se podrá conocer.\n",
 
-        // Cromo
-        "Hace perder al objetivo las reservas alománticas.\nPara que haga efecto, tiene que quemarse el metal y tocar al objetivo.",
+        // CROMO
+        "Al quemar el metal, y atacar a un brumoso, agotarás sus reservas alománticas temporalmente.\n"+
+        "Este metal se consume rápido con cada ataque, pero en momentos específicos puede ayudar mucho.\n",
 
-        // Nicrosil
-        "Hace perder al objetivo las reservas alománticas de los metales que esté quemando en un estallido de poder.\nPara que haga efecto, tiene que quemarse el metal y tocar al objetivo.",
+        // NICROSIL
+        "Al quemar el metal, y atacar a un brumoso, le infundirás un destello de poder, pudiendo llegar a confundirlos durante un periodo de tiempo y agotándole las reservas.\n"+
+        "Este metal se consume rápido con cada ataque, pero en momentos específicos puede ayudar mucho.\n",
 
-        // Aluminio
-        "Hace perder al brumoso sus propias reservas alománticas.\nAl quemarlo, todas las reservas se perderán rápidamente.",
+        // ALUMINIO
+        "Al quemar el metal, las reservas de todos los metales se consumirán a una gran velocidad, despojando de la alomancia al que lo queme.\n"+
+        "Su uso no es muy recomendable, pero nunca se sabe a ciencia cierta.\n",
 
-        // Duralumín
-        "Hace perder al brumoso sus propias reservas alománticas de los metales que esté quemando en un estallido de poder.\nEste metal puede ser muy poderoso, pero peligroso dependiendo del metal que se queme.",
+        // DURALUMINIO
+        "Al quemar el metal, las reservas de todos los metales que se estén quemando se quemarán mucho más rápido, permitiendo aumentar la potencia de estos en grandes cantidades.\n"+
+        "Cada metal tiene su potencial mejorado al usarlo con duraluminio, algunos hasta adquieren efectos adicionales.\n",
 
-        // Atium
-        "Permite al usuario ver unos segundos en el futuro, pudiendo prever qué pasará.\nUn metal muy poderoso, pero se consume con mucha facilidad."
+        // ATIUM
+        "Al quemar el metal, todo enemigo mostrará qué hará en el futuro próximo, otorgándote la capacidad de esquivar fácilmente, pero aún te pueden dar.\n"+
+        "Un metal divino que crece en geodas muy frágiles difíciles de encontrar, de ahí su escasez.\n",
     };
     private string[] nombreMetalFeru = new string[] {
         "Brazal de Hierro",
@@ -205,15 +224,15 @@ public class PauseManager : MonoBehaviour{
 
         //Tachuela de Estaño
         "Quitada del costado de una recolectora de objetos valiosos.\n"+
-        "Pringada de su agudeza, permite ver objetos y caminos secretos",
+        "Pringada de su agudeza, permite ver mejor.",
 
         //Punta de Peltre
-        "Sacada de la cuenca de un violento sin más.\n"+
+        "Sacada de la cuenca de un violento más.\n"+
         "Empapada de su volatilidad, potencia los ataques.",
 
         //Tachuela de Zinc
         "Extirpada con tristeza del cuello de un niño perdido por las calles.\n"+
-        "Bañada en su adaptabilidad, reduce el tiempo de reutilización de los objetos",
+        "Bañada en su agudeza, aumenta el tiempo de invulnerabilidad tras un golpe",
 
         //Escarpia de Latón
         "Arrancada de la sien de un pirómano empedernido.\n"+
@@ -221,7 +240,7 @@ public class PauseManager : MonoBehaviour{
 
         //Clavo de Cobre
         "Retirado con respeto del pecho de un remunerado cartógrafo.\n"+
-        "Haciendo acopio de su saber, muestra en el mapa los puntos más interesantes.",
+        "Haciendo acopio de su saber, muestra en el mapa los puntos de interés.",
 
         //Alcayata de Bronce
         "Arrebatada de la frente de un matasanos desquiciado.\n"+
@@ -233,31 +252,31 @@ public class PauseManager : MonoBehaviour{
 
         //Punta de Bendaleo
         "Quitada del hombro de un pescador mecido por las mareas.\n"+
-        "Empapada de su sino, aumenta la cantidad de recursos conseguidos.",
+        "Empapada de su sino, aumenta el poder curativo de los viales de salud.",
 
         //Tachuela de Oro
         "Extraída del antebrazo de un aclamado doctor sin título.\n"+
-        "Bañada en su saber, otorga una curación lenta pero sin pausa",
+        "Bañada en su saber, otorga una curación lenta pero sin pausa.",
 
         //Alcayata de Electro
-        "Arrancada con rabia de la espalda de un Inquisidor.\n"+
-        "Manchada de su inhumanidad, mejora los efectos hemalúrgicos",
+        "Extirpada del brazo de un guardaespaldas violento sin familia.\n"+
+        "Pringada de su agilidad, permite evitar el daño de algunos golpes.",
 
         //Escarpia de Cromo
         "Retirada de la mano un ilusionista de un noble.\n"+
-        "Imbuida con su naturaleza escurridiza, otorga inmunidad temporal a los efectos negativos.",
+        "Imbuida con su naturaleza embaucadora, aumenta la cantidad de recursos generados.",
 
         //Clavo de Nicrosil
         "Sacado del omóplato de un vidente sin oficio ni beneficio.\n"+
-        "Embebido de su mala saña, aumenta el tiempo de efectos negativos de los enemigos.",
+        "Embebido de su investidura, aumenta la eficacia de la alomancia.",
 
         //Tornillo de Aluminio
         "Quitado del abdomen de un embalsamador altruista.\n"+
-        "Impregando de su resiliencia, acelera la desaparición de efectos negativos.",
+        "Anula por completo la alomancia y la feruquimia.",
 
         //Alcayata de Duralumín
-        "Extirpada del brazo de un guardaespaldas violento sin familia.\n"+
-        "Pringada de su fuerza, permite concentrar ataques más potentes.",
+        "Arrancada con rabia de la espalda de un Koloss.\n"+
+        "Manchada de su inhumanidad, mejora los efectos hemalúrgicos",
 
         //Escarpia de Atium
         "Arrancada con saña de la pierna de un Inquisidor.\n"+

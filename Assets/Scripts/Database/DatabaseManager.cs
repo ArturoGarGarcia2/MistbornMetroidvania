@@ -293,7 +293,7 @@ public class DatabaseManager : MonoBehaviour
     }
 
     public void ExecuteNonQuery(string query, params object[] parameters){
-        Debug.Log($"ExecuteNonQuery query: {query}");
+        // Debug.Log($"ExecuteNonQuery query: {query}");
         using (IDbConnection dbConnection = new SqliteConnection(dbName))
         {
             dbConnection.Open();

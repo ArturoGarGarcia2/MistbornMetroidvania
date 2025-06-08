@@ -35,7 +35,7 @@ public class UnlockingManager : MonoBehaviour{
         "DURALUMINIO",
         "ATIUM"
     };
-    string[] descriptions = {
+    string[] descriptionsAlo = {
         // HIERRO
         "Al quemar el metal, manten pulsado Q para con A y D elegir una línea alomántica, \nmientras tengas pulsado Q, al pulsar U tirarás del objeto.\n"+
         "Si el objeto es más ligero, saldrá lanzado hacia ti; si es más pesado, tú saldrás disparado hacia él.",
@@ -105,6 +105,144 @@ public class UnlockingManager : MonoBehaviour{
         // ATIUM
         "Al quemar el metal, todo enemigo mostrará qué hará en el futuro próximo, otorgándote la capacidad de esquivar fácilmente, pero aún te pueden dar.\n"+
         "Un metal divino que crece en geodas muy frágiles difíciles de encontrar, de ahí su escasez.\n",
+    };
+    private string[] descriptionsFeru = new string[] {
+        // Brazal de Hierro
+        "Al guardar peso en hierro, el peso disminuirá permitiendo saltar más alto;\n"+
+        "Al decantar peso del hierro, el peso aumentará acortando el salto",
+
+        // Bracil de Acero
+        "Al guardar velocidad en acero, la velocidad de movimiento se verá reducida;\n" +
+        "Al decantar velocidad del acero, la velocidad de movimiento aumentará considerablemente",
+
+        // Esclava de Estaño
+        "Al guardar percepción en estaño, la percepción del entorno será peor;\n" +
+        "Al decantar percepción del estaño, el entorno aparenta esclarecerse.",
+
+        // Ajorca de Peltre
+        "Al guardar fuerza en peltre, los golpes harán menos daño;\n" +
+        "Al decantar fuerza del peltre, los golpes serán empoderados golpeando más fuerte.",
+
+        // Pulsera de Zinc
+        "Al guardar velocidad de pensamiento en zinc, al ser golpeado habrá menos tiempo para recuperarse;\n" +
+        "Al decantar velocidad de pensamiento del zinc, la ventana para volver a ser golpeado es más amplia.",
+
+        // Bracil de Latón
+        "Al guardar calor en latón, el daño entre golpe y golpe del fuego es mayor;\n" +
+        "Al decantar calor del latón, el daño del fuego se repite con más frecuencia.",
+
+        // Brazal de Cobre
+        "Al guardar recuerdos en cobre, estos se olvidarán y pasarán a guardarse en el cobre, inmutables.\n" +
+        "Al decantar recuerdos del cobre, se tendrá acceso a los recuerdos tal y como se guardaron.",
+
+        // Pulsera de Bronce
+        "Al guardar vigilia en bronce, la duración del bloqueo es menor;\n" +
+        "Al decantar vigilia del bronce, el bloqueo protege durante más tiempo.",
+
+        // Brazalete de Cadmio
+        "Al guardar aliento en cadmio, el tiempo de aguante en las brumas tóxicas es menor;\n" +
+        "Al decantar aliento del cadmio, las brumas tóxicas tardarán más en sofocar.",
+
+        // Bracil de Bendaleo
+        "Al guardar nutrición en bendaleo, el poder curativo de los viales es menor;\n" +
+        "Al decantar nutrición el bendaleo, al consumir un vial curará más que de costumbre.",
+
+        // Ajorca de Oro
+        "Al guardar salud en oro, la vida máxima será reducida a un tercio;\n" +
+        "Al decantar salud del oro, la vida se rellenará a una velocidad considerable.",
+
+        // Brazalete de Electro
+        "Al guardar determinación en electro, cualquier golpe puede ser crítico.\n" +
+        "Al decantar determinación del electro, el daño recibido será reducido.",
+
+        // Brazal de Cromo
+        "Al guardar fortuna en cromo, el botín encontrado por el mundo será menor;\n" +
+        "Al decantar fortuna del cromo, el botín encontrado será mayor.",
+
+        // Esclava de Nicrosil
+        "Al guardar investidura en nicrosil, la alomancia tendrá que consumir más metales de las reservas;\n" +
+        "Al decantar investidura del nicrosil, la alomancia se vuelve más eficiente, requiriendo menos metales.",
+
+        // Brazalete de Aluminio
+        "Al guardar identidad en aluminio, la locura aumenta con mayor velocidad;\n" +
+        "Al decantar identidad del aluminio, el ciclo de locura se revierte a un ritmo lento.",
+
+        // Pulsera de Duralumín
+        "Al guardar conexión en duralumín, los precios en las tiendas se ven aumentados;\n" +
+        "Al decantar conexión del duralumín, las tiendas confían más, rebajando los precios.",
+
+        // Esclava de Atium
+        "Al guardar edad en atium, se recibe daño poco a poco, pudiendo ser letal;\n" +
+        "Al decantar edad del atium, cualquier daño que sea letal será inútil."
+    };
+    private string[] descriptionsHema = new string[] {
+        //Clavo de Hierro
+        "Extraído del pie de un padre skaa crucificado buscando a su hijo.\n"+
+        "Impregnado de su fortaleza, otorga resistencia a los empujes.",
+
+        //Tornillo de Acero
+        "Arrebatado del cráneo de un prestigioso ladrón.\n"+
+        "Imbuido con su presteza, otorga velocidad de movimiento.",
+
+        //Tachuela de Estaño
+        "Quitada del costado de una recolectora de objetos valiosos.\n"+
+        "Pringada de su agudeza, permite ver mejor.",
+
+        //Punta de Peltre
+        "Sacada de la cuenca de un violento más.\n"+
+        "Empapada de su volatilidad, potencia los ataques.",
+
+        //Tachuela de Zinc
+        "Extirpada con tristeza del cuello de un niño perdido por las calles.\n"+
+        "Bañada en su agudeza, aumenta el tiempo de invulnerabilidad tras un golpe",
+
+        //Escarpia de Latón
+        "Arrancada de la sien de un pirómano empedernido.\n"+
+        "Manchada por su amor al fuego, reduce el daño de este.",
+
+        //Clavo de Cobre
+        "Retirado con respeto del pecho de un remunerado cartógrafo.\n"+
+        "Haciendo acopio de su saber, muestra en el mapa los puntos de interés.",
+
+        //Alcayata de Bronce
+        "Arrebatada de la frente de un matasanos desquiciado.\n"+
+        "Embebida de su conocimiento, muestra la salud de los enemigos.",
+
+        //Tornillo de Cadmio
+        "Sacado del pulmón de un minero en las cuevas de carbón.\n"+
+        "Imbuido de su capacidad, aumenta el tiempo que se puede aguantar la respiración.",
+
+        //Punta de Bendaleo
+        "Quitada del hombro de un pescador mecido por las mareas.\n"+
+        "Empapada de su sino, aumenta el poder curativo de los viales de salud.",
+
+        //Tachuela de Oro
+        "Extraída del antebrazo de un aclamado doctor sin título.\n"+
+        "Bañada en su saber, otorga una curación lenta pero sin pausa.",
+
+        //Alcayata de Electro
+        "Extirpada del brazo de un guardaespaldas violento sin familia.\n"+
+        "Pringada de su agilidad, permite evitar el daño de algunos golpes.",
+
+        //Escarpia de Cromo
+        "Retirada de la mano un ilusionista de un noble.\n"+
+        "Imbuida con su naturaleza embaucadora, aumenta la cantidad de recursos generados.",
+
+        //Clavo de Nicrosil
+        "Sacado del omóplato de un vidente sin oficio ni beneficio.\n"+
+        "Embebido de su investidura, aumenta la eficacia de la alomancia.",
+
+        //Tornillo de Aluminio
+        "Quitado del abdomen de un embalsamador altruista.\n"+
+        "Anula por completo la alomancia y la feruquimia.",
+
+        //Alcayata de Duralumín
+        "Arrancada con rabia de la espalda de un Koloss.\n"+
+        "Manchada de su inhumanidad, mejora los efectos hemalúrgicos",
+
+        //Escarpia de Atium
+        "Arrancada con saña de la pierna de un Inquisidor.\n"+
+        "Manchada de su potencia, otorga la probabilidad de esquivar cualquier ataque.",
     };
 
     public GameObject panel;
@@ -204,8 +342,14 @@ public class UnlockingManager : MonoBehaviour{
                         "¿?¿?¿?";
 
             title.text = $"METAL {tipo} DESBLOQUEADO";
+
             metalName.text = names[(int)unlockeableMetal - 1];
-            metalDescription.text = descriptions[(int)unlockeableMetal - 1];
+
+            metalDescription.text = unlockeableMetalArt == MetalArt.ALLOMANCY ? descriptionsAlo[(int)unlockeableMetal - 1] :
+                                    unlockeableMetalArt == MetalArt.FERUCHEMY ? descriptionsFeru[(int)unlockeableMetal - 1] :
+                                    unlockeableMetalArt == MetalArt.HEMALURGY ? descriptionsHema[(int)unlockeableMetal - 1] :
+            "¿?¿?¿?";
+
             foreach(Image i in metalSymbols){
                 if(unlockeableMetalArt == MetalArt.ALLOMANCY){
                     i.sprite = aloMetalSymbols[(int)unlockeableMetal - 1];

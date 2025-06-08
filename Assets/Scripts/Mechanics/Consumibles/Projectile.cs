@@ -56,6 +56,10 @@ public class Projectile : MonoBehaviour, Consumible{
 
     }
 
+    public void AddStock() {
+        stock += 1;
+    }
+
     public string GetName() => name;
     public string GetDescription() => description;
     public int GetStock() => stock;

@@ -7,9 +7,25 @@ public class InicioMaganer : MonoBehaviour{
 
     public GameObject panelInicio;
     public GameObject panelArchivos;
+    public GameObject panelControles;
+
+    bool showingControles = false;
 
     void Start(){
         panelArchivos.SetActive(false);
+        panelControles.SetActive(false);
+    }
+
+    public void ShowControles(){
+        if(!showingControles){
+            showingControles = true;
+            panelArchivos.SetActive(false);
+            panelInicio.SetActive(false);
+        }else{
+            panelInicio.SetActive(true);
+            showingControles = false;
+        }
+        panelControles.SetActive(showingControles);
     }
 
     public void Jugar1(){

@@ -17,7 +17,6 @@ public class KolossBoss : MonoBehaviour, Boss{
     public float moveSpeed;
     public string eventName;
 
-    public GameObject salida;
     public GameObject cierre;
 
     public GameObject kolossAttack;
@@ -52,7 +51,6 @@ public class KolossBoss : MonoBehaviour, Boss{
             Destroy(bossGameObject);
             return;
         }
-        salida.SetActive(false);
         kolossAttack.SetActive(false);
         if (player == null)
             player = GameObject.FindGameObjectWithTag("Player").transform;
@@ -179,7 +177,6 @@ public class KolossBoss : MonoBehaviour, Boss{
         HideHealthBar();
         animator.SetBool("Dead",true);
         cierre.SetActive(false);
-        salida.SetActive(true);
         pd.AchieveEventByName(eventName);
         Destroy(gameObject, 2f);
     }

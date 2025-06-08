@@ -1050,6 +1050,8 @@ public class PlayerData{
     public void MakeInvulnerable() => invulnerable = true;
     public void MakeVulnerable() => invulnerable = false;
     public void AddLaudanoBottle() => laudano.AddStock();
+    public void AddProjectileFlecha() => projectiles[0].AddStock();
+    public void AddProjectilePiedra() => projectiles[2].AddStock();
     public void Revive(){
         health = maxHealth;
         alive = true;

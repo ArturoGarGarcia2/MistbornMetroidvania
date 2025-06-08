@@ -815,10 +815,19 @@ public class PlayerScript : MonoBehaviour{
         }
     }
 
+    bool dashOnCooldown = false;
+
     public void OnDash(InputAction.CallbackContext context){
-        if (context.performed && canDash && !pressingQ){
+        if (context.performed && canDash && !dashOnCooldown && !pressingQ){
             StartDash();
+            StartCoroutine(DashCooldown());
         }
+    }
+
+    IEnumerator DashCooldown(){
+        dashOnCooldown = true;
+        yield return new WaitForSeconds(.7f);
+        dashOnCooldown = false;
     }
 
     public void OnHeal(InputAction.CallbackContext context){
@@ -1142,7 +1151,7 @@ public class PlayerScript : MonoBehaviour{
     }
     public string GetNombreMetal(int metalId){
         return DatabaseManager.Instance.GetString(
-            $"SELECT name FROM metal_file WHERE file_id = 1 AND metal_id = {metalId};"
+            $"SELECT name FROM metals WHERE id = {metalId};"
         );
     }
     public int GetIdMetal(string nombreMetal){
