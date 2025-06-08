@@ -18,12 +18,11 @@ MonoBehaviour:
   - estado: inicio
     frases:
     - "\xBFAcabas de salir del cementerio? Nunca me esperaba ver algo as\xED."
-    - "Tiene un aspecto horrible, pero te he visto quemar hierro, as\xED que tal
-      vez esto te viene bien"
-    - "Lo malo es que te voy a tener que cobrar, no son tiempos f\xE1ciles para nadie."
+    - Tiene un aspecto horrible, volver de entre los muertos no puede ser muy agradable.
+    - "\xBFVes la casa de ah\xED? No vemos all\xED y as\xED te podr\xE9 ayudar."
   - estado: casa_1
     frases:
-    - "\xA1Anda! Si eres t\xFA otra vez, "
-    - "Tiene un aspecto horrible, pero te he visto quemar hierro, as\xED que tal
-      vez esto te viene bien"
-    - "Lo malo es que te voy a tener que cobrar, no son tiempos f\xE1ciles para nadie."
+    - "\xA1Anda! Si eres t\xFA otra vez."
+    - "Sigues teniendo un aspecto horrible, pero tenemos preparado un mejunge que
+      te ayudar\xE1."
+    - Te aviso que no sabe para nada bien.

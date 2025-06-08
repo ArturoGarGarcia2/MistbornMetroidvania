@@ -364,7 +364,9 @@ public class SimpleBrumousEnemy : MonoBehaviour {
     }
 
     IEnumerator InvulnerabilityCooldown() {
+        GetComponent<SpriteRenderer>().color = Color.red;
         yield return new WaitForSeconds(.5f);
+        GetComponent<SpriteRenderer>().color = Color.white;
         invulnerable = false;
     }
 
@@ -452,7 +454,7 @@ public class SimpleBrumousEnemy : MonoBehaviour {
         if (playerScript == null) return;
         if (pd == null) return;
         AloMetal amAti = pd.GetAloMetalIfEquipped((int)Metal.ATIUM);
-        if((amAti! == null && amAti.IsBurning()) && !burningElectrum ) return;
+        if((amAti != null && amAti.IsBurning()) && !burningElectrum ) return;
 
         ParryManager parryManager = FindObjectOfType<ParryManager>();
         if (parryManager != null && !parryManager.canParry) {

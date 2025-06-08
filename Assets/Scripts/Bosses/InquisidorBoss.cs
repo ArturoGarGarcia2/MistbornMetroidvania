@@ -40,7 +40,7 @@ public class InquisidorBoss : MonoBehaviour, Boss{
     };
     Metal previousMetal = Metal.NULL;
     public Metal currentMetal = Metal.PEWTER;
-    float timeWithMetal = 5f;
+    float timeWithMetal = 15f;
     float timeWithMetalCounter = 0f;
     
     bool choosingMetal = false;

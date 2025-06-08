@@ -21,7 +21,15 @@ MonoBehaviour:
     - "Lamento haberos dejado en la fosa, pero ya era demasiado peligroso el curaros
       ah\xED como para tambi\xE9n sacaros"
     - "El tiempo no apremia a nadie, y menos a los que lo pierden, as\xED que tomad
-      cuanto necesiteis, pagad y marchaos, regresad si gustais, aqu\xED estar\xE9
-      para ayudaros en lo que est\xE9 en mi mano."
+      cuanto necesiteis y marchaos, regresad si gust\xE1is, aqu\xED estar\xE9 para
+      ayudaros en lo que est\xE9 en mi mano."
     - "Pero tambi\xE9n tengo mis propios menesteres, no es por ser descort\xE9s,
       pero mejor no interrumpirnos mutuamente o al menos, lo menos posible."
+  - estado: forja
+    frases:
+    - "Me hab\xE9is encontrado, nadie hab\xEDa llegado hasta aqu\xED, y menos a mi
+      forja"
+    - "Lamento informaros de que no dispongo de nada de ayuda para vos, mas pod\xE9is
+      quedaros cuanto quer\xE1is."
+    - "Yo seguir\xE9 trabajando ya que tengo un encargo que realizar, as\xED que
+      no os dar\xE9 mucha m\xE1s conversaci\xF3n."
